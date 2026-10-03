@@ -39,6 +39,12 @@ const SPR_SCALE = 0.5;               // sprite sheet px -> world px
 const SHEET = new Image(); SHEET.src = 'assets/robot.png';
 const CITY  = new Image(); CITY.src  = 'assets/city.png';
 
+// ---------------------------------------------------------------- soft puff sprite (for steam)
+const PUFF=document.createElement('canvas'); PUFF.width=PUFF.height=64;
+{ const g=PUFF.getContext('2d'), r=g.createRadialGradient(32,32,2,32,32,32);
+  r.addColorStop(0,'rgba(255,215,225,1)'); r.addColorStop(.4,'rgba(255,150,175,.4)'); r.addColorStop(1,'rgba(255,100,140,0)');
+  g.fillStyle=r; g.fillRect(0,0,64,64); }
+
 // ---------------------------------------------------------------- canvas
 const cv = document.getElementById('c'), ctx = cv.getContext('2d');
 const W = cv.width, H = cv.height;
@@ -93,12 +99,12 @@ function onAnyPress(code){
 // ---------------------------------------------------------------- world
 const GRAV=2400, RUN=340, JUMP_V=-940, GROUND_Y=468, JET_THRUST=5200, JET_SPEED=460;
 const game = { mode:'title', time:0, score:0, best:+(localStorage.getItem('kin_best')||0), hp:3, dist:0, shake:0, flash:0 };
-let player, plats, enemies, chips, boosts, parts, cam, genX, lastSafe;
+let player, plats, enemies, chips, boosts, parts, steam, cam, genX, lastSafe;
 
 function startGame(){
   game.mode='play'; game.score=0; game.hp=3; game.dist=0; game.time=0; game.shake=0;
   player={x:200,y:GROUND_Y,vx:0,vy:0,w:44,h:100,face:1,ground:false,state:'idle',t:0,atkT:0,atkHit:false,inv:0,coyote:0,landT:0,jet:false,thrust:false};
-  plats=[]; enemies=[]; chips=[]; boosts=[]; parts=[]; cam={x:0}; genX=0; lastSafe={x:200};
+  plats=[]; enemies=[]; chips=[]; boosts=[]; parts=[]; steam=[]; cam={x:0}; genX=0; lastSafe={x:200};
   // starting ground
   addPlat(-400, GROUND_Y, 1400, 'ground'); genX=1000;
   while(genX < 3000) genChunk();
@@ -222,6 +228,23 @@ function update(dt){
   // --- particles
   for(const q of parts){ q.life-=dt; q.x+=q.vx*dt; q.y+=q.vy*dt; q.vy+=900*dt; }
   parts=parts.filter(q=>q.life>0);
+
+  // --- steam rising from pits between ground segments
+  updateSteam(dt);
+}
+function groundGaps(){
+  const g=plats.filter(pl=>pl.type==='ground').sort((a,b)=>a.x-b.x), out=[];
+  for(let i=0;i<g.length-1;i++){ const x0=g[i].x+g[i].w, x1=g[i+1].x; if(x1-x0>30) out.push([x0,x1]); }
+  return out;
+}
+function updateSteam(dt){
+  for(const [x0,x1] of groundGaps()){
+    if(x1<cam.x-100||x0>cam.x+W+100) continue;
+    let n=Math.max(170,Math.min(x1-x0,420))*dt*.045; while(n>0){ if(Math.random()<n) steam.push({x:rnd(x0+8,x1-8),y:GROUND_Y+rnd(70,150),vx:rnd(-10,10),vy:rnd(-60,-100),life:rnd(1.8,3),max:0,sz:rnd(10,20),ph:Math.random()*6}); n-=1; }
+  }
+  for(const q of steam){ if(!q.max) q.max=q.life; q.life-=dt; q.y+=q.vy*dt; q.x+=(q.vx+Math.sin(game.time*1.5+q.ph)*10)*dt; q.vy*=1-dt*.3; q.sz+=12*dt; }
+  steam=steam.filter(q=>q.life>0 && q.x>cam.x-80 && q.x<cam.x+W+80);
+  if(steam.length>220) steam.splice(0,steam.length-220);
 }
 function overlap(a,b){ return a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y; }
 function killEnemy(e,dir){ e.alive=false; game.score+=100; SFX.hitE(); game.shake=.35; const ey=e.type==='drone'?e.y-40:e.y-20; puff(e.x,ey,22,'#ff2d55',320); puff(e.x,ey,10,'#ffd1dc',200); }
@@ -239,7 +262,7 @@ function draw(){
   ctx.save();
   if(game.shake>0){ ctx.translate((Math.random()-.5)*game.shake*18,(Math.random()-.5)*game.shake*18); }
   drawBackground();
-  if(game.mode!=='title'){ drawPlatforms(); drawChips(); drawBoosts(); drawEnemies(); drawPlayer(); drawParticles(); }
+  if(game.mode!=='title'){ drawPlatforms(); drawSteam(); drawChips(); drawBoosts(); drawEnemies(); drawPlayer(); drawParticles(); }
   ctx.restore();
   if(game.flash>0){ ctx.fillStyle=`rgba(255,45,85,${game.flash})`; ctx.fillRect(0,0,W,H); game.flash-=1/60; }
   drawHUD();
@@ -292,6 +315,17 @@ function drawBoosts(){
       ctx.shadowColor='#35e9ff'; ctx.shadowBlur=16; ctx.fillStyle=`rgba(53,233,255,${pulse})`; ctx.beginPath(); ctx.ellipse(0,-30,6,9,0,0,Math.PI*2); ctx.fill();
     }
     ctx.restore(); }
+}
+function drawSteam(){
+  // faint glow at the floor of each pit
+  for(const [x0,x1] of groundGaps()){ const sx=x0-cam.x; if(sx>W||sx+(x1-x0)<0) continue;
+    const g=ctx.createLinearGradient(0,H-90,0,H); g.addColorStop(0,'rgba(255,45,85,0)'); g.addColorStop(1,'rgba(255,45,85,.16)');
+    ctx.fillStyle=g; ctx.fillRect(sx,H-90,x1-x0,90); }
+  for(const q of steam){
+    const k=q.life/q.max, a=Math.sin(k*Math.PI)*.11;      // fade in, then out
+    ctx.globalAlpha=a; const d=q.sz*2; ctx.drawImage(PUFF,q.x-cam.x-q.sz,q.y-q.sz,d,d);
+  }
+  ctx.globalAlpha=1;
 }
 function drawChips(){
   for(const c of chips){ const x=c.x-cam.x,y=c.y+Math.sin(c.t*3)*4; if(x<-30||x>W+30) continue;
