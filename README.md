@@ -21,7 +21,7 @@ Then open http://localhost:8765. Any other static file server works too.
 | Jump (hold for height) | Space, W, or ↑ |
 | Duck | ↓ or S |
 | Shoot | V, B, or N |
-| Start | Any key (or tap) |
+| Start | Space, Enter, or tap |
 | Retry | Space, Enter, or a shoot key |
 | Toggle music | M |
 
