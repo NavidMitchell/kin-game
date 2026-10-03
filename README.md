@@ -29,6 +29,7 @@ On touch devices, on-screen buttons appear automatically.
 - Endless procedurally generated level: ground runs, pits, stepping platforms, and towers.
 - Two enemy types: ground crawlers and hovering drones. Punch them or stomp them for 100 points.
 - Cyan data chips are worth 10 points each.
+- Fuel tanks and egg pods grant a jet booster (+50). Hold jump in the air to fly. You keep it until an enemy hits you or you fall.
 - Three hit points. Falling into a pit costs one and respawns you on the last safe ground.
 - Best score is saved in the browser.
 

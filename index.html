@@ -63,6 +63,7 @@ const SFX = {
   chip: ()=>beep(900,1500,.12,'sine',.09),
   hurt: ()=>beep(200,40,.4,'sawtooth',.14),
   land: ()=>beep(120,60,.07,'square',.04),
+  jet:  ()=>{beep(200,900,.35,'sawtooth',.1); beep(600,1400,.4,'sine',.08);},
 };
 
 // ---------------------------------------------------------------- input
@@ -90,14 +91,14 @@ function onAnyPress(code){
 }
 
 // ---------------------------------------------------------------- world
-const GRAV=2400, RUN=340, JUMP_V=-940, GROUND_Y=468;
+const GRAV=2400, RUN=340, JUMP_V=-940, GROUND_Y=468, JET_THRUST=5200, JET_SPEED=460;
 const game = { mode:'title', time:0, score:0, best:+(localStorage.getItem('kin_best')||0), hp:3, dist:0, shake:0, flash:0 };
-let player, plats, enemies, chips, parts, cam, genX, lastSafe;
+let player, plats, enemies, chips, boosts, parts, cam, genX, lastSafe;
 
 function startGame(){
   game.mode='play'; game.score=0; game.hp=3; game.dist=0; game.time=0; game.shake=0;
-  player={x:200,y:GROUND_Y,vx:0,vy:0,w:44,h:100,face:1,ground:false,state:'idle',t:0,atkT:0,atkHit:false,inv:0,coyote:0,landT:0};
-  plats=[]; enemies=[]; chips=[]; parts=[]; cam={x:0}; genX=0; lastSafe={x:200};
+  player={x:200,y:GROUND_Y,vx:0,vy:0,w:44,h:100,face:1,ground:false,state:'idle',t:0,atkT:0,atkHit:false,inv:0,coyote:0,landT:0,jet:false,thrust:false};
+  plats=[]; enemies=[]; chips=[]; boosts=[]; parts=[]; cam={x:0}; genX=0; lastSafe={x:200};
   // starting ground
   addPlat(-400, GROUND_Y, 1400, 'ground'); genX=1000;
   while(genX < 3000) genChunk();
@@ -111,6 +112,7 @@ function genChunk(){
     if(Math.random()<.7){ const px=genX+rnd(100,w-300), py=GROUND_Y-rnd(130,210), pw=rnd(160,300); addPlat(px,py,pw,'float'); spawnChips(px+20,py-40,Math.floor(pw/50)); if(Math.random()<.5) spawnEnemy(px+pw/2,py,pw/2-20,'drone'); }
     if(Math.random()<.75) spawnEnemy(genX+rnd(200,w-200),GROUND_Y,rnd(80,200),'crawler');
     if(Math.random()<.5) spawnChips(genX+rnd(60,w-260),GROUND_Y-60,4);
+    if(Math.random()<.35) spawnBoost(genX+rnd(120,w-120),GROUND_Y,Math.random()<.5?'tank':'egg');
     genX+=w+rnd(100,170);                      // gap
   } else if(r<.8){ // stepping platforms over a pit
     let x=genX, y=GROUND_Y-rnd(40,120), n=2+Math.floor(Math.random()*3);
@@ -118,11 +120,12 @@ function genChunk(){
     genX=x;
   } else { // tall tower with ledges
     const w=rnd(400,600); addPlat(genX,GROUND_Y,w,'ground');
-    let y=GROUND_Y-120; for(let i=0;i<3;i++){ const pw=rnd(120,200), px=genX+(i%2?w-pw-30:30); addPlat(px,y,pw,'float'); spawnChips(px+10,y-40,2); y-=110; }
+    let y=GROUND_Y-120; for(let i=0;i<3;i++){ const pw=rnd(120,200), px=genX+(i%2?w-pw-30:30); addPlat(px,y,pw,'float'); spawnChips(px+10,y-40,2); if(i===2&&Math.random()<.6) spawnBoost(px+pw/2,y,'egg'); y-=110; }
     spawnEnemy(genX+w/2,GROUND_Y,w/2-40,'crawler'); spawnEnemy(genX+w/2,y+40,w/2-60,'drone');
     genX+=w+rnd(100,170);
   }
 }
+function spawnBoost(x,y,type){ boosts.push({x,y,type,t:Math.random()*6}); }
 function spawnChips(x,y,n){ for(let i=0;i<n;i++) chips.push({x:x+i*48,y:y-Math.sin(i/(n-1||1)*Math.PI)*30,r:11,got:false,t:Math.random()*6}); }
 function spawnEnemy(cx,y,range,type){ enemies.push({x:cx,y,type,w:type==='drone'?58:62,h:type==='drone'?42:46,vx:(Math.random()<.5?-1:1)*(type==='drone'?90:70),minX:cx-range,maxX:cx+range,alive:true,t:Math.random()*6,dieT:0}); }
 function puff(x,y,n,col,spd=260){ for(let i=0;i<n;i++){ const a=Math.random()*Math.PI*2, s=Math.random()*spd; parts.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-80,life:rnd(.3,.8),col,sz:rnd(2,6)}); } }
@@ -147,8 +150,15 @@ function update(dt){
   // --- jump
   p.coyote = p.ground ? .1 : p.coyote-dt;
   if(jumpBuffer>0 && p.coyote>0){ jumpBuffer=0; p.coyote=0; p.vy=JUMP_V; p.ground=false; SFX.jump(); puff(p.x,p.y,6,'#35e9ff',120); }
-  if(!jumpK() && p.vy<-300) p.vy=-300;   // variable jump height
-  p.vy=Math.min(p.vy+GRAV*dt, 1500);
+  p.thrust=false;
+  if(p.jet && !p.ground && jumpK()){        // jet booster: hold jump to fly
+    p.thrust=true; p.vy=Math.max(-JET_SPEED, p.vy-JET_THRUST*dt);
+    if(Math.random()<.9) parts.push({x:p.x-p.face*14+rnd(-6,6),y:p.y-8,vx:-p.face*rnd(40,120)+p.vx*.3,vy:rnd(220,420),life:rnd(.15,.35),col:Math.random()<.5?'#35e9ff':'#e9fdff',sz:rnd(3,8)});
+  } else {
+    if(!jumpK() && p.vy<-300 && !p.jet) p.vy=-300;   // variable jump height
+    p.vy=Math.min(p.vy+GRAV*dt, 1500);
+  }
+  if(p.jet && p.y<80){ p.y=80; p.vy=Math.max(0,p.vy); }
 
   // --- integrate + platform collisions (feet at p.y; body box above)
   const prevY=p.y;
@@ -180,7 +190,7 @@ function update(dt){
 
   // --- generation + pruning
   while(genX < cam.x+W+1200) genChunk();
-  plats=plats.filter(o=>o.x+o.w>cam.x-600); enemies=enemies.filter(o=>o.x>cam.x-600); chips=chips.filter(o=>o.x>cam.x-300&&!o.got);
+  plats=plats.filter(o=>o.x+o.w>cam.x-600); enemies=enemies.filter(o=>o.x>cam.x-600); chips=chips.filter(o=>o.x>cam.x-300&&!o.got); boosts=boosts.filter(o=>o.x>cam.x-300);
 
   // --- attack hitbox
   let hb=null;
@@ -205,6 +215,10 @@ function update(dt){
   // --- chips
   for(const c of chips){ c.t+=dt; if(Math.hypot(c.x-p.x,c.y-(p.y-50))<c.r+34){ c.got=true; game.score+=10; SFX.chip(); puff(c.x,c.y,8,'#35e9ff',160); } }
 
+  // --- boosters (tanks / eggs)
+  for(const b of boosts){ b.t+=dt; if(Math.abs(b.x-p.x)<40 && Math.abs((b.y-30)-(p.y-50))<70){ b.got=true; p.jet=true; game.score+=50; SFX.jet(); game.shake=.25; puff(b.x,b.y-30,26,'#35e9ff',300); puff(b.x,b.y-30,10,'#ffffff',180); } }
+  boosts=boosts.filter(b=>!b.got);
+
   // --- particles
   for(const q of parts){ q.life-=dt; q.x+=q.vx*dt; q.y+=q.vy*dt; q.vy+=900*dt; }
   parts=parts.filter(q=>q.life>0);
@@ -213,6 +227,7 @@ function overlap(a,b){ return a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a
 function killEnemy(e,dir){ e.alive=false; game.score+=100; SFX.hitE(); game.shake=.35; const ey=e.type==='drone'?e.y-40:e.y-20; puff(e.x,ey,22,'#ff2d55',320); puff(e.x,ey,10,'#ffd1dc',200); }
 function hurt(fell,dir=0){
   const p=player; game.hp--; SFX.hurt(); game.shake=.6; game.flash=.25;
+  if(p.jet){ p.jet=false; p.thrust=false; puff(p.x,p.y-50,30,'#35e9ff',380); puff(p.x,p.y-50,12,'#ff2d55',250); }
   if(game.hp<=0){ game.mode='over'; if(game.score>game.best){ game.best=game.score; localStorage.setItem('kin_best',game.best); } return; }
   if(fell){ p.x=lastSafe.x; p.y=GROUND_Y-20; p.vy=0; p.vx=0; cam.x=Math.min(cam.x,p.x-200); }
   else { p.vy=-500; p.vx=dir*420; p.ground=false; }
@@ -224,7 +239,7 @@ function draw(){
   ctx.save();
   if(game.shake>0){ ctx.translate((Math.random()-.5)*game.shake*18,(Math.random()-.5)*game.shake*18); }
   drawBackground();
-  if(game.mode!=='title'){ drawPlatforms(); drawChips(); drawEnemies(); drawPlayer(); drawParticles(); }
+  if(game.mode!=='title'){ drawPlatforms(); drawChips(); drawBoosts(); drawEnemies(); drawPlayer(); drawParticles(); }
   ctx.restore();
   if(game.flash>0){ ctx.fillStyle=`rgba(255,45,85,${game.flash})`; ctx.fillRect(0,0,W,H); game.flash-=1/60; }
   drawHUD();
@@ -260,6 +275,23 @@ function drawPlatforms(){
       ctx.fillStyle='rgba(53,233,255,.08)'; ctx.fillRect(x,y+3,pl.w,8);
     }
   }
+}
+function drawBoosts(){
+  for(const b of boosts){ const x=b.x-cam.x, y=b.y+Math.sin(b.t*2.5)*3; if(x<-60||x>W+60) continue;
+    ctx.save(); ctx.translate(x,y); ctx.shadowColor='#35e9ff'; ctx.shadowBlur=18;
+    if(b.type==='tank'){
+      ctx.fillStyle='#0e1a1f'; rr(-13,-52,26,52,7); ctx.fill();
+      ctx.fillStyle='#35e9ff'; ctx.fillRect(-13,-40,26,4); ctx.fillRect(-13,-22,26,4); rr(-5,-58,10,8,3); ctx.fill();
+      ctx.fillStyle='rgba(53,233,255,.35)'; ctx.fillRect(-9,-48,5,42);
+      ctx.shadowBlur=0; ctx.fillStyle='#e9fdff'; ctx.font='bold 10px system-ui'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('JET',0,-31);
+    } else {
+      const pulse=.6+Math.sin(b.t*4)*.4;
+      ctx.fillStyle='#1a0c14'; ctx.beginPath(); ctx.ellipse(0,-30,18,28,0,0,Math.PI*2); ctx.fill();
+      ctx.shadowColor='#ff2d55'; ctx.shadowBlur=10+pulse*14; ctx.strokeStyle='#ff2d55'; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(-14,-40); ctx.lineTo(-4,-28); ctx.lineTo(-10,-14); ctx.moveTo(6,-50); ctx.lineTo(12,-34); ctx.lineTo(4,-20); ctx.stroke();
+      ctx.shadowColor='#35e9ff'; ctx.shadowBlur=16; ctx.fillStyle=`rgba(53,233,255,${pulse})`; ctx.beginPath(); ctx.ellipse(0,-30,6,9,0,0,Math.PI*2); ctx.fill();
+    }
+    ctx.restore(); }
 }
 function drawChips(){
   for(const c of chips){ const x=c.x-cam.x,y=c.y+Math.sin(c.t*3)*4; if(x<-30||x>W+30) continue;
@@ -299,6 +331,7 @@ function drawEnemies(){
 function rr(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
 function currentFrame(p){
   if(p.state==='attack'){ const i=Math.min(5,Math.floor(p.t/.42*6)); return FRAMES.attack[i]; }
+  if(p.state==='jump' && p.thrust) return FRAMES.jump[3];
   if(p.state==='jump'){ let i; if(p.vy<-500)i=1; else if(p.vy<-150)i=2; else if(p.vy<150)i=3; else if(p.vy<600)i=4; else i=5; return FRAMES.jump[i]; }
   if(p.landT>0) return FRAMES.jump[0];
   if(p.state==='run'){ return FRAMES.run[Math.floor(p.t*12)%6]; }
@@ -311,6 +344,14 @@ function drawPlayer(){
   ctx.save(); ctx.translate(p.x-cam.x, p.y); ctx.scale(p.face,1);
   // shadow
   ctx.fillStyle='rgba(0,0,0,.45)'; ctx.beginPath(); ctx.ellipse(0,2,28,6,0,0,Math.PI*2); ctx.fill();
+  if(p.jet){ // jet pack on the back
+    ctx.shadowColor='#35e9ff'; ctx.shadowBlur=14; ctx.fillStyle='#0e1a1f'; rr(-34,-78,16,40,5); ctx.fill();
+    ctx.fillStyle='#35e9ff'; ctx.fillRect(-34,-66,16,3); ctx.fillRect(-34,-52,16,3);
+    if(p.thrust){ const fl=22+Math.random()*18; ctx.fillStyle='#35e9ff'; ctx.beginPath(); ctx.moveTo(-33,-38); ctx.lineTo(-19,-38); ctx.lineTo(-26,-38+fl); ctx.closePath(); ctx.fill();
+      ctx.fillStyle='#ffffff'; ctx.beginPath(); ctx.moveTo(-30,-38); ctx.lineTo(-22,-38); ctx.lineTo(-26,-38+fl*.5); ctx.closePath(); ctx.fill(); }
+    else { ctx.fillStyle=`rgba(53,233,255,${.4+Math.sin(game.time*12)*.3})`; ctx.fillRect(-30,-38,8,4); }
+    ctx.shadowBlur=0;
+  }
   ctx.drawImage(SHEET, f[0],f[1],f[2],f[3], -dw/2, -dh, dw, dh);
   ctx.restore();
 }
@@ -321,6 +362,7 @@ function drawHUD(){
     ctx.font='bold 22px system-ui'; ctx.fillStyle='#35e9ff'; ctx.shadowColor='#35e9ff'; ctx.shadowBlur=10;
     ctx.textAlign='left'; ctx.fillText('SCORE '+game.score, 20, 16);
     ctx.textAlign='center'; ctx.fillText(game.dist+' m', W/2, 16);
+    if(player.jet){ ctx.fillStyle=`rgba(53,233,255,${.7+Math.sin(game.time*6)*.3})`; ctx.font='bold 16px system-ui'; ctx.fillText('JET ONLINE  ·  hold jump to fly', W/2, 44); ctx.font='bold 22px system-ui'; }
     ctx.textAlign='right'; for(let i=0;i<3;i++){ ctx.fillStyle=i<game.hp?'#35e9ff':'rgba(53,233,255,.18)'; ctx.fillRect(W-20-(i*30)-22,18,22,22); }
     ctx.shadowBlur=0;
   }
@@ -331,10 +373,10 @@ function drawHUD(){
     ctx.fillText(game.mode==='title'?'KIN RUNNER':'SIGNAL LOST', W/2, 130);
     ctx.shadowBlur=0; ctx.font='20px system-ui'; ctx.fillStyle='#dfe9ef';
     if(game.mode==='over'){ ctx.fillText('Score '+game.score+'   ·   Distance '+game.dist+' m   ·   Best '+game.best, W/2, 230); }
-    else { ctx.fillText('Run the neon grid. Punch the red drones. Collect data chips.', W/2, 230); }
+    else { ctx.fillText('Run the neon grid. Punch the red drones. Grab a fuel tank or egg to fly.', W/2, 230); }
     ctx.fillStyle='#ff2d55'; ctx.font='bold 18px system-ui';
     ctx.fillText('← →  /  A D   move        SPACE / W / ↑   jump        J / X / Z   punch', W/2, 300);
-    ctx.fillText('Stomp or punch enemies   ·   Hold jump for height', W/2, 332);
+    ctx.fillText('Stomp or punch enemies   ·   Jet booster lasts until you get hit', W/2, 332);
     const blink=Math.floor(game.time*2)%2===0; if(blink){ ctx.fillStyle='#fff'; ctx.font='bold 26px system-ui'; ctx.fillText(game.mode==='title'?'PRESS SPACE / ENTER TO START':'PRESS SPACE / ENTER TO RETRY', W/2, 420); }
     if(game.best && game.mode==='title'){ ctx.fillStyle='#35e9ff'; ctx.font='16px system-ui'; ctx.fillText('BEST '+game.best, W/2, 470); }
     // title-screen robot
