@@ -61,7 +61,7 @@ const SH_SCALE=0.62, ATK_TIME=.42, ATK_FIRE=.28, SHOT_SPEED=780;
 // ---------------------------------------------------------------- soft puff sprite (for steam)
 const PUFF=document.createElement('canvas'); PUFF.width=PUFF.height=64;
 { const g=PUFF.getContext('2d'), r=g.createRadialGradient(32,32,2,32,32,32);
-  r.addColorStop(0,'rgba(255,215,225,1)'); r.addColorStop(.4,'rgba(255,150,175,.4)'); r.addColorStop(1,'rgba(255,100,140,0)');
+  r.addColorStop(0,'rgba(220,250,255,1)'); r.addColorStop(.4,'rgba(140,235,255,.4)'); r.addColorStop(1,'rgba(53,233,255,0)');
   g.fillStyle=r; g.fillRect(0,0,64,64); }
 
 // ---------------------------------------------------------------- canvas
@@ -513,13 +513,13 @@ function drawSteam(){
     const pulse=.85+Math.sin(game.time*2.2+x0*.01)*.15, top=GROUND_Y-170;
     ctx.save(); ctx.globalCompositeOperation='lighter';
     // main vertical beam
-    let g=ctx.createLinearGradient(0,top,0,H); g.addColorStop(0,'rgba(255,45,85,0)'); g.addColorStop(.55,`rgba(255,45,85,${.22*pulse})`); g.addColorStop(1,`rgba(255,80,120,${.6*pulse})`);
+    let g=ctx.createLinearGradient(0,top,0,H); g.addColorStop(0,'rgba(53,233,255,0)'); g.addColorStop(.55,`rgba(53,233,255,${.22*pulse})`); g.addColorStop(1,`rgba(90,240,255,${.6*pulse})`);
     ctx.fillStyle=g; ctx.fillRect(sx,top,gw,H-top);
     // hot core near the floor
-    g=ctx.createLinearGradient(0,GROUND_Y,0,H); g.addColorStop(0,'rgba(255,140,170,0)'); g.addColorStop(1,`rgba(255,160,190,${.45*pulse})`);
+    g=ctx.createLinearGradient(0,GROUND_Y,0,H); g.addColorStop(0,'rgba(190,250,255,0)'); g.addColorStop(1,`rgba(200,250,255,${.45*pulse})`);
     ctx.fillStyle=g; ctx.fillRect(sx+gw*.15,GROUND_Y,gw*.7,H-GROUND_Y);
     // lit pit walls
-    ctx.shadowColor='#ff2d55'; ctx.shadowBlur=18; ctx.fillStyle=`rgba(255,70,110,${.9*pulse})`;
+    ctx.shadowColor='#35e9ff'; ctx.shadowBlur=18; ctx.fillStyle=`rgba(80,235,255,${.9*pulse})`;
     ctx.fillRect(sx-1,GROUND_Y,3,H-GROUND_Y); ctx.fillRect(sx+gw-2,GROUND_Y,3,H-GROUND_Y);
     ctx.restore(); }
   for(const q of steam){
