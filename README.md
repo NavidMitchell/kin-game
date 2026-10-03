@@ -19,6 +19,7 @@ Then open http://localhost:8765. Any other static file server works too.
 |---|---|
 | Move | ← → or A D |
 | Jump (hold for height) | Space, W, or ↑ |
+| Duck | ↓ or S |
 | Punch | V, B, or N |
 | Start / retry | Space or Enter |
 

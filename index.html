@@ -88,6 +88,7 @@ bindBtn('bl','ArrowLeft'); bindBtn('br','ArrowRight'); bindBtn('bj','Space'); bi
 const left  = ()=>keys.ArrowLeft||keys.KeyA;
 const right = ()=>keys.ArrowRight||keys.KeyD;
 const jumpK = ()=>keys.Space||keys.ArrowUp||keys.KeyW;
+const downK = ()=>keys.ArrowDown||keys.KeyS;
 const atkK  = ()=>keys.KeyV||keys.KeyB||keys.KeyN;
 let jumpBuffer=0, atkBuffer=0;
 function onAnyPress(code){
@@ -148,10 +149,11 @@ function update(dt){
 
   // --- horizontal movement
   const dir=(right()?1:0)-(left()?1:0);
-  const target = attacking && p.ground ? 0 : dir*RUN;
+  const ducking = p.ground && downK() && !attacking;
+  const target = (attacking || ducking) && p.ground ? 0 : dir*RUN;
   const acc = p.ground? 2600 : 1500;
   if(p.vx<target) p.vx=Math.min(target,p.vx+acc*dt); else if(p.vx>target) p.vx=Math.max(target,p.vx-acc*dt);
-  if(dir && !attacking) p.face=dir;
+  if(dir && !attacking && !ducking) p.face=dir;
 
   // --- jump
   p.coyote = p.ground ? .1 : p.coyote-dt;
@@ -185,7 +187,7 @@ function update(dt){
 
   // --- state machine
   if(attacking){ if(p.t>.42) p.state='idle'; }
-  if(p.state!=='attack'){ p.state = !p.ground ? 'jump' : Math.abs(p.vx)>20 ? 'run' : 'idle'; }
+  if(p.state!=='attack'){ p.state = !p.ground ? 'jump' : ducking ? 'duck' : Math.abs(p.vx)>20 ? 'run' : 'idle'; }
 
   // --- camera
   const look=p.face*120;
@@ -207,10 +209,10 @@ function update(dt){
     e.t+=dt;
     if(!e.alive){ e.dieT+=dt; continue; }
     e.x+=e.vx*dt; if(e.x<e.minX){e.x=e.minX;e.vx=Math.abs(e.vx);} if(e.x>e.maxX){e.x=e.maxX;e.vx=-Math.abs(e.vx);}
-    const ey = e.type==='drone' ? e.y-60+Math.sin(e.t*2.5)*12 : e.y-e.h;   // top of enemy box
+    const ey = e.type==='drone' ? e.y-118+Math.sin(e.t*2.5)*12 : e.y-e.h;   // top of enemy box
     const box={x:e.x-e.w/2,y:ey,w:e.w,h:e.h};
     if(hb && overlap(hb,box)){ killEnemy(e,p.face); continue; }
-    const pb={x:p.x-p.w/2+8,y:p.y-p.h,w:p.w-16,h:p.h};
+    const ph=p.state==='duck'?50:p.h; const pb={x:p.x-p.w/2+8,y:p.y-ph,w:p.w-16,h:ph};
     if(overlap(pb,box)){
       if(p.vy>200 && p.y-20 < box.y+box.h*.6){ killEnemy(e,0); p.vy=JUMP_V*.6; }
       else if(p.inv<=0) hurt(false, e.x<p.x?1:-1);
@@ -247,7 +249,7 @@ function updateSteam(dt){
   if(steam.length>220) steam.splice(0,steam.length-220);
 }
 function overlap(a,b){ return a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y; }
-function killEnemy(e,dir){ e.alive=false; game.score+=100; SFX.hitE(); game.shake=.35; const ey=e.type==='drone'?e.y-40:e.y-20; puff(e.x,ey,22,'#ff2d55',320); puff(e.x,ey,10,'#ffd1dc',200); }
+function killEnemy(e,dir){ e.alive=false; game.score+=100; SFX.hitE(); game.shake=.35; const ey=e.type==='drone'?e.y-98:e.y-20; puff(e.x,ey,22,'#ff2d55',320); puff(e.x,ey,10,'#ffd1dc',200); }
 function hurt(fell,dir=0){
   const p=player; game.hp--; SFX.hurt(); game.shake=.6; game.flash=.25;
   if(p.jet){ p.jet=false; p.thrust=false; puff(p.x,p.y-50,30,'#35e9ff',380); puff(p.x,p.y-50,12,'#ff2d55',250); }
@@ -351,7 +353,7 @@ function drawEnemies(){
     if(!e.alive){ continue; }
     ctx.save();
     if(e.type==='drone'){
-      const y=e.y-60+Math.sin(e.t*2.5)*12+e.h/2; ctx.translate(x,y); if(e.vx<0) ctx.scale(-1,1);
+      const y=e.y-118+Math.sin(e.t*2.5)*12+e.h/2; ctx.translate(x,y); if(e.vx<0) ctx.scale(-1,1);
       ctx.shadowColor='#ff2d55'; ctx.shadowBlur=18;
       ctx.fillStyle='#120b10'; rr(-29,-20,58,40,8); ctx.fill();
       ctx.fillStyle='#ff2d55'; ctx.fillRect(-18,-6,10,6); ctx.fillRect(2,-6,16,6); // eyes
@@ -377,7 +379,7 @@ function currentFrame(p){
   if(p.state==='attack'){ const i=Math.min(5,Math.floor(p.t/.42*6)); return FRAMES.attack[i]; }
   if(p.state==='jump' && p.thrust) return FRAMES.jump[3];
   if(p.state==='jump'){ let i; if(p.vy<-500)i=1; else if(p.vy<-150)i=2; else if(p.vy<150)i=3; else if(p.vy<600)i=4; else i=5; return FRAMES.jump[i]; }
-  if(p.landT>0) return FRAMES.jump[0];
+  if(p.state==='duck' || p.landT>0) return FRAMES.jump[0];
   if(p.state==='run'){ return FRAMES.run[Math.floor(p.t*12)%6]; }
   return FRAMES.idle[Math.floor(p.t*5)%4];
 }
@@ -419,7 +421,7 @@ function drawHUD(){
     if(game.mode==='over'){ ctx.fillText('Score '+game.score+'   ·   Distance '+game.dist+' m   ·   Best '+game.best, W/2, 230); }
     else { ctx.fillText('Run the neon grid. Punch the red drones. Grab a fuel tank or egg to fly.', W/2, 230); }
     ctx.fillStyle='#ff2d55'; ctx.font='bold 18px system-ui';
-    ctx.fillText('← →  /  A D   move        SPACE / W / ↑   jump        V / B / N   punch', W/2, 300);
+    ctx.fillText('← →  /  A D   move      SPACE / W / ↑   jump      ↓ / S   duck      V / B / N   punch', W/2, 300);
     ctx.fillText('Stomp or punch enemies   ·   Jet booster lasts until you get hit', W/2, 332);
     const blink=Math.floor(game.time*2)%2===0; if(blink){ ctx.fillStyle='#fff'; ctx.font='bold 26px system-ui'; ctx.fillText(game.mode==='title'?'PRESS SPACE / ENTER TO START':'PRESS SPACE / ENTER TO RETRY', W/2, 420); }
     if(game.best && game.mode==='title'){ ctx.fillStyle='#35e9ff'; ctx.font='16px system-ui'; ctx.fillText('BEST '+game.best, W/2, 470); }
