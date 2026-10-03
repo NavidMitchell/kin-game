@@ -88,12 +88,12 @@ bindBtn('bl','ArrowLeft'); bindBtn('br','ArrowRight'); bindBtn('bj','Space'); bi
 const left  = ()=>keys.ArrowLeft||keys.KeyA;
 const right = ()=>keys.ArrowRight||keys.KeyD;
 const jumpK = ()=>keys.Space||keys.ArrowUp||keys.KeyW;
-const atkK  = ()=>keys.KeyB;
+const atkK  = ()=>keys.KeyV||keys.KeyB||keys.KeyN;
 let jumpBuffer=0, atkBuffer=0;
 function onAnyPress(code){
   if(['Space','ArrowUp','KeyW'].includes(code)) jumpBuffer=.12;
-  if(code==='KeyB') atkBuffer=.15;
-  if(game.mode!=='play' && (code==='Enter'||code==='Space'||code==='KeyB')) { if(game.mode==='over'||game.mode==='title') startGame(); }
+  if(['KeyV','KeyB','KeyN'].includes(code)) atkBuffer=.15;
+  if(game.mode!=='play' && (code==='Enter'||code==='Space'||['KeyV','KeyB','KeyN'].includes(code))) { if(game.mode==='over'||game.mode==='title') startGame(); }
 }
 
 // ---------------------------------------------------------------- world
@@ -409,7 +409,7 @@ function drawHUD(){
     if(game.mode==='over'){ ctx.fillText('Score '+game.score+'   ·   Distance '+game.dist+' m   ·   Best '+game.best, W/2, 230); }
     else { ctx.fillText('Run the neon grid. Punch the red drones. Grab a fuel tank or egg to fly.', W/2, 230); }
     ctx.fillStyle='#ff2d55'; ctx.font='bold 18px system-ui';
-    ctx.fillText('← →  /  A D   move        SPACE / W / ↑   jump        B   punch', W/2, 300);
+    ctx.fillText('← →  /  A D   move        SPACE / W / ↑   jump        V / B / N   punch', W/2, 300);
     ctx.fillText('Stomp or punch enemies   ·   Jet booster lasts until you get hit', W/2, 332);
     const blink=Math.floor(game.time*2)%2===0; if(blink){ ctx.fillStyle='#fff'; ctx.font='bold 26px system-ui'; ctx.fillText(game.mode==='title'?'PRESS SPACE / ENTER TO START':'PRESS SPACE / ENTER TO RETRY', W/2, 420); }
     if(game.best && game.mode==='title'){ ctx.fillStyle='#35e9ff'; ctx.font='16px system-ui'; ctx.fillText('BEST '+game.best, W/2, 470); }
