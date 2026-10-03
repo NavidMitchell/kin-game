@@ -49,6 +49,8 @@ const DFR = {
 const DR_SCALE=0.26, SHOOT_TIME=.7, SHOOT_FIRE=.38, LASER_SPEED=560;
 // Player energy-shot sheet (faces right): charge, fire, projectile
 const SHOOT = new Image(); SHOOT.src = 'assets/robot_shoot.png';
+const TITLE = new Image(); TITLE.src = 'assets/title.jpg';
+const LOGO  = new Image(); LOGO.src  = 'assets/kinotic-logo.svg';
 const SFR = {
   charge: [[29,23,127,169],[207,25,143,167],[383,27,196,167],[595,26,205,168],[800,25,220,170],[1038,26,197,170],[1259,23,205,174]],
   fire:   [[7,224,183,165],[190,230,210,165],[400,230,210,165],[610,233,371,163]],
@@ -247,7 +249,8 @@ let jumpBuffer=0, atkBuffer=0;
 function onAnyPress(code){
   if(['Space','ArrowUp','KeyW'].includes(code)) jumpBuffer=.12;
   if(['KeyV','KeyB','KeyN'].includes(code)) atkBuffer=.15;
-  if(game.mode!=='play' && (code==='Enter'||code==='Space'||['KeyV','KeyB','KeyN'].includes(code))) { if(game.mode==='over'||game.mode==='title') startGame(); }
+  if(game.mode==='title' && code!=='KeyM'){ startGame(); return; }
+  if(game.mode==='over' && (code==='Enter'||code==='Space'||['KeyV','KeyB','KeyN'].includes(code))) startGame();
 }
 
 // ---------------------------------------------------------------- world
@@ -604,7 +607,8 @@ function drawHUD(){
     ctx.textAlign='right'; for(let i=0;i<3;i++){ ctx.fillStyle=i<game.hp?'#35e9ff':'rgba(53,233,255,.18)'; ctx.fillRect(W-20-(i*30)-22,18,22,22); }
     ctx.shadowBlur=0;
   }
-  if(game.mode==='title'||game.mode==='over'){
+  if(game.mode==='title'){ drawTitle(); return; }
+  if(game.mode==='over'){
     ctx.fillStyle='rgba(7,5,10,.72)'; ctx.fillRect(0,0,W,H);
     ctx.textAlign='center';
     ctx.font='900 72px system-ui'; ctx.fillStyle='#35e9ff'; ctx.shadowColor='#35e9ff'; ctx.shadowBlur=30;
@@ -617,9 +621,32 @@ function drawHUD(){
     ctx.fillText('Shoot or stomp drones   ·   Duck under lasers   ·   Jet booster lasts until you get hit   ·   M  music', W/2, 332);
     const blink=Math.floor(game.time*2)%2===0; if(blink){ ctx.fillStyle='#fff'; ctx.font='bold 26px system-ui'; ctx.fillText(game.mode==='title'?'PRESS SPACE / ENTER TO START':'PRESS SPACE / ENTER TO RETRY', W/2, 420); }
     if(game.best && game.mode==='title'){ ctx.fillStyle='#35e9ff'; ctx.font='16px system-ui'; ctx.fillText('BEST '+game.best, W/2, 470); }
-    // title-screen robot
-    if(SHEET.complete && SHEET.naturalWidth && game.mode==='title'){ const f=FRAMES.idle[Math.floor(game.time*5)%4]; const dh=f[3]*.6, dw=f[2]*.6; ctx.drawImage(SHEET,f[0],f[1],f[2],f[3],W/2-dw/2,H-dh-50,dw,dh); }
   }
+}
+function drawTitle(){
+  ctx.fillStyle='#07050a'; ctx.fillRect(0,0,W,H);
+  if(TITLE.complete && TITLE.naturalWidth){
+    const iw=TITLE.naturalWidth, ih=TITLE.naturalHeight;
+    // blurred, darkened bleed to fill the wide canvas
+    const cs=W/iw, ch=ih*cs; ctx.save(); ctx.filter='blur(16px) brightness(.45)'; ctx.drawImage(TITLE,-20,(H-ch)/2,W+40,ch); ctx.restore();
+    // poster fitted by height, centered
+    const s=H/ih, dw=iw*s, x0=(W-dw)/2; ctx.drawImage(TITLE,x0,0,dw,H);
+    // soft edges where the poster meets the bleed
+    for(const [x,d] of [[x0,1],[x0+dw,-1]]){ const g=ctx.createLinearGradient(x,0,x+d*28,0); g.addColorStop(0,'rgba(7,5,10,.9)'); g.addColorStop(1,'rgba(7,5,10,0)'); ctx.fillStyle=g; ctx.fillRect(Math.min(x,x+d*28),0,28,H); }
+    // pulsing glow on the PRESS ANY KEY prompt
+    const pulse=.5+Math.sin(game.time*3.2)*.5, px=x0+520*s, py=915*s, pw=410*s, ph=70*s;
+    ctx.save(); ctx.globalCompositeOperation='lighter'; ctx.globalAlpha=.35*pulse; ctx.shadowColor='#35e9ff'; ctx.shadowBlur=30; ctx.fillStyle='#35e9ff'; rr(px,py,pw,ph,10); ctx.fill(); ctx.restore();
+    // best score badge
+    if(game.best){ ctx.textAlign='left'; ctx.textBaseline='top'; ctx.font='bold 14px system-ui'; ctx.fillStyle='#35e9ff'; ctx.shadowColor='#35e9ff'; ctx.shadowBlur=10; ctx.fillText('BEST '+game.best, 16, 14); ctx.shadowBlur=0; }
+    ctx.textAlign='right'; ctx.font='12px system-ui'; ctx.fillStyle='rgba(223,233,239,.7)'; ctx.fillText('M  music', W-16, 14);
+  }
+  // powered by Kinotic
+  const lw=132, lh=LOGO.naturalWidth?lw*LOGO.naturalHeight/LOGO.naturalWidth:lw*200/1128, label='POWERED BY';
+  ctx.font='600 11px system-ui'; ctx.textAlign='left'; ctx.textBaseline='middle';
+  const tw=ctx.measureText(label).width, gap=12, total=tw+gap+lw, bx=(W-total)/2, by=H-22;
+  ctx.fillStyle='rgba(7,5,10,.72)'; rr(bx-18,by-16,total+36,32,16); ctx.fill();
+  ctx.fillStyle='rgba(223,233,239,.85)'; ctx.fillText(label,bx,by+1);
+  if(LOGO.complete && LOGO.naturalWidth) ctx.drawImage(LOGO,bx+tw+gap,by-lh/2,lw,lh);
 }
 
 // ---------------------------------------------------------------- loop

@@ -21,7 +21,8 @@ Then open http://localhost:8765. Any other static file server works too.
 | Jump (hold for height) | Space, W, or ↑ |
 | Duck | ↓ or S |
 | Shoot | V, B, or N |
-| Start / retry | Space or Enter |
+| Start | Any key (or tap) |
+| Retry | Space, Enter, or a shoot key |
 | Toggle music | M |
 
 On touch devices, on-screen buttons appear automatically.
@@ -44,3 +45,5 @@ On touch devices, on-screen buttons appear automatically.
 - `assets/city.png` – parallax background, tiled horizontally in two layers.
 - `assets/drone.png` – enemy sprite sheet (hover 4, dash 6, laser 4, death 4 frames).
 - `assets/robot_shoot.png` – player energy-shot sheet (charge 7, fire 4, projectile 3 frames).
+- `assets/title.jpg` – title screen poster.
+- `assets/kinotic-logo.svg` – Kinotic logo shown in the "Powered by" credit on the title screen.
