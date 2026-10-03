@@ -19,7 +19,7 @@ Then open http://localhost:8765. Any other static file server works too.
 |---|---|
 | Move | ← → or A D |
 | Jump (hold for height) | Space, W, or ↑ |
-| Punch | J, X, Z, or K |
+| Punch | B |
 | Start / retry | Space or Enter |
 
 On touch devices, on-screen buttons appear automatically.
