@@ -5,13 +5,13 @@ Pure HTML5 canvas and vanilla JavaScript, no build step and no dependencies.
 
 ## Play
 
-Open `index.html` through any static file server, for example:
+Run the bundled server:
 
 ```bash
-npx serve .
+./serve.sh
 ```
 
-Then visit the printed URL. (Loading `index.html` directly from disk also works in most browsers.)
+Then open http://localhost:8765. Any other static file server works too.
 
 ## Controls
 
