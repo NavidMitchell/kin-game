@@ -24,6 +24,7 @@ Then open http://localhost:8765. Any other static file server works too.
 | Start | Space, Enter, or tap |
 | Retry | Space, Enter, or a shoot key |
 | Toggle music | M |
+| Fullscreen | F |
 
 On touch devices, on-screen buttons appear automatically.
 
