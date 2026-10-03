@@ -317,10 +317,20 @@ function drawBoosts(){
     ctx.restore(); }
 }
 function drawSteam(){
-  // faint glow at the floor of each pit
-  for(const [x0,x1] of groundGaps()){ const sx=x0-cam.x; if(sx>W||sx+(x1-x0)<0) continue;
-    const g=ctx.createLinearGradient(0,H-90,0,H); g.addColorStop(0,'rgba(255,45,85,0)'); g.addColorStop(1,'rgba(255,45,85,.16)');
-    ctx.fillStyle=g; ctx.fillRect(sx,H-90,x1-x0,90); }
+  // light shaft rising from each pit
+  for(const [x0,x1] of groundGaps()){ const sx=x0-cam.x, gw=x1-x0; if(sx>W||sx+gw<0) continue;
+    const pulse=.85+Math.sin(game.time*2.2+x0*.01)*.15, top=GROUND_Y-170;
+    ctx.save(); ctx.globalCompositeOperation='lighter';
+    // main vertical beam
+    let g=ctx.createLinearGradient(0,top,0,H); g.addColorStop(0,'rgba(255,45,85,0)'); g.addColorStop(.55,`rgba(255,45,85,${.22*pulse})`); g.addColorStop(1,`rgba(255,80,120,${.6*pulse})`);
+    ctx.fillStyle=g; ctx.fillRect(sx,top,gw,H-top);
+    // hot core near the floor
+    g=ctx.createLinearGradient(0,GROUND_Y,0,H); g.addColorStop(0,'rgba(255,140,170,0)'); g.addColorStop(1,`rgba(255,160,190,${.45*pulse})`);
+    ctx.fillStyle=g; ctx.fillRect(sx+gw*.15,GROUND_Y,gw*.7,H-GROUND_Y);
+    // lit pit walls
+    ctx.shadowColor='#ff2d55'; ctx.shadowBlur=18; ctx.fillStyle=`rgba(255,70,110,${.9*pulse})`;
+    ctx.fillRect(sx-1,GROUND_Y,3,H-GROUND_Y); ctx.fillRect(sx+gw-2,GROUND_Y,3,H-GROUND_Y);
+    ctx.restore(); }
   for(const q of steam){
     const k=q.life/q.max, a=Math.sin(k*Math.PI)*.11;      // fade in, then out
     ctx.globalAlpha=a; const d=q.sz*2; ctx.drawImage(PUFF,q.x-cam.x-q.sz,q.y-q.sz,d,d);
