@@ -47,6 +47,14 @@ const DFR = {
   death: [[37,833,310,190],[383,832,313,191],[732,823,316,226],[1085,800,339,260]],
 };
 const DR_SCALE=0.26, SHOOT_TIME=.7, SHOOT_FIRE=.38, LASER_SPEED=560;
+// Player energy-shot sheet (faces right): charge, fire, projectile
+const SHOOT = new Image(); SHOOT.src = 'assets/robot_shoot.png';
+const SFR = {
+  charge: [[29,23,127,169],[207,25,143,167],[383,27,196,167],[595,26,205,168],[800,25,220,170],[1038,26,197,170],[1259,23,205,174]],
+  fire:   [[7,224,183,165],[190,230,210,165],[400,230,210,165],[610,233,371,163]],
+  proj:   [[1014,276,183,90],[1237,289,140,67],[1405,301,85,49]],
+};
+const SH_SCALE=0.62, ATK_TIME=.42, ATK_FIRE=.28, SHOT_SPEED=780;
 
 // ---------------------------------------------------------------- soft puff sprite (for steam)
 const PUFF=document.createElement('canvas'); PUFF.width=PUFF.height=64;
@@ -73,7 +81,8 @@ function beep(f0,f1,dur,type='square',vol=.08){
 }
 const SFX = {
   jump: ()=>beep(300,700,.15,'square'),
-  punch:()=>beep(180,60,.12,'sawtooth',.1),
+  charge:()=>beep(300,1100,.25,'sine',.06),
+  shoot:()=>{beep(900,200,.22,'sawtooth',.1); beep(1600,500,.15,'square',.05);},
   hitE: ()=>{beep(500,80,.25,'sawtooth',.12); beep(900,120,.2,'square',.05);},
   chip: ()=>beep(900,1500,.12,'sine',.09),
   hurt: ()=>beep(200,40,.4,'sawtooth',.14),
@@ -110,12 +119,12 @@ function onAnyPress(code){
 // ---------------------------------------------------------------- world
 const GRAV=2400, RUN=340, JUMP_V=-940, GROUND_Y=468, JET_THRUST=5200, JET_SPEED=460;
 const game = { mode:'title', time:0, score:0, best:+(localStorage.getItem('kin_best')||0), hp:3, dist:0, shake:0, flash:0 };
-let player, plats, enemies, lasers, chips, boosts, parts, steam, cam, genX, lastSafe;
+let player, plats, enemies, lasers, shots, chips, boosts, parts, steam, cam, genX, lastSafe;
 
 function startGame(){
   game.mode='play'; game.score=0; game.hp=3; game.dist=0; game.time=0; game.shake=0;
   player={x:200,y:GROUND_Y,vx:0,vy:0,w:44,h:100,face:1,ground:false,state:'idle',t:0,atkT:0,atkHit:false,inv:0,coyote:0,landT:0,jet:false,thrust:false};
-  plats=[]; enemies=[]; lasers=[]; chips=[]; boosts=[]; parts=[]; steam=[]; cam={x:0}; genX=0; lastSafe={x:200};
+  plats=[]; enemies=[]; lasers=[]; shots=[]; chips=[]; boosts=[]; parts=[]; steam=[]; cam={x:0}; genX=0; lastSafe={x:200};
   // starting ground
   addPlat(-400, GROUND_Y, 1400, 'ground'); genX=1000;
   while(genX < 3000) genChunk();
@@ -155,7 +164,7 @@ function update(dt){
   const p=player;
 
   // --- attack
-  if(atkBuffer>0 && p.state!=='attack'){ atkBuffer=0; p.state='attack'; p.t=0; p.atkHit=false; SFX.punch(); }
+  if(atkBuffer>0 && p.state!=='attack'){ atkBuffer=0; p.state='attack'; p.t=0; p.atkHit=false; SFX.charge(); }
   const attacking = p.state==='attack';
 
   // --- horizontal movement
@@ -197,7 +206,10 @@ function update(dt){
   if(p.y>H+120){ hurt(true); }
 
   // --- state machine
-  if(attacking){ if(p.t>.42) p.state='idle'; }
+  if(attacking){
+    if(!p.atkHit && p.t>=ATK_FIRE){ p.atkHit=true; shots.push({x:p.x+p.face*46,y:p.y-52,vx:p.face*SHOT_SPEED,life:1.2,t:0}); SFX.shoot(); puff(p.x+p.face*46,p.y-52,6,'#ff7ad9',120); }
+    if(p.t>ATK_TIME) p.state='idle';
+  }
   if(p.state!=='attack'){ p.state = !p.ground ? 'jump' : ducking ? 'duck' : Math.abs(p.vx)>20 ? 'run' : 'idle'; }
 
   // --- camera
@@ -211,9 +223,8 @@ function update(dt){
   while(genX < cam.x+W+1200) genChunk();
   plats=plats.filter(o=>o.x+o.w>cam.x-600); enemies=enemies.filter(o=>o.x>cam.x-600); chips=chips.filter(o=>o.x>cam.x-300&&!o.got); boosts=boosts.filter(o=>o.x>cam.x-300);
 
-  // --- attack hitbox
-  let hb=null;
-  if(attacking && p.t>.1 && p.t<.3) hb={x:p.face>0?p.x+10:p.x-100, y:p.y-100, w:90, h:70};
+  // --- energy shots
+  for(const sh of shots){ sh.t+=dt; sh.life-=dt; sh.x+=sh.vx*dt; }
 
   // --- enemies
   for(const e of enemies){
@@ -234,7 +245,9 @@ function update(dt){
         if(Math.abs(dx)<560 && Math.abs(dx)>60 && Math.abs(dy)<90 && dx>cam.x-e.x-W){ e.shootT=.001; e.fired=false; e.face=dx<0?-1:1; e.cool=rnd(2.2,3.6); }
       }
     }
-    if(hb && overlap(hb,box)){ killEnemy(e,p.face); continue; }
+    let shot=false;
+    for(const sh of shots){ if(sh.life>0 && overlap({x:sh.x-24,y:sh.y-14,w:48,h:28},box)){ sh.life=0; shot=true; break; } }
+    if(shot){ killEnemy(e,p.face); continue; }
     const ph=p.state==='duck'?50:p.h; const pb={x:p.x-p.w/2+8,y:p.y-ph,w:p.w-16,h:ph};
     if(overlap(pb,box)){
       if(p.vy>200 && p.y-20 < box.y+box.h*.6){ killEnemy(e,0); p.vy=JUMP_V*.6; }
@@ -249,7 +262,10 @@ function update(dt){
     const ph=p.state==='duck'?50:p.h, pb={x:p.x-p.w/2+8,y:p.y-ph,w:p.w-16,h:ph}, lb={x:l.x-22,y:l.y-3,w:44,h:6};
     if(overlap(pb,lb)){ l.life=0; puff(l.x,l.y,10,'#ff2d55',200); if(p.inv<=0) hurt(false, l.vx<0?-1:1); }
   }
+  // shots can knock enemy lasers out of the air
+  for(const l of lasers) for(const sh of shots){ if(sh.life>0 && l.life>0 && Math.abs(l.x-sh.x)<40 && Math.abs(l.y-sh.y)<30){ l.life=0; sh.life=0; puff(sh.x,sh.y,10,'#ff7ad9',220); } }
   lasers=lasers.filter(l=>l.life>0 && l.x>cam.x-100 && l.x<cam.x+W+100);
+  shots=shots.filter(sh=>sh.life>0 && sh.x>cam.x-120 && sh.x<cam.x+W+120);
 
   // --- chips
   for(const c of chips){ c.t+=dt; if(Math.hypot(c.x-p.x,c.y-(p.y-50))<c.r+34){ c.got=true; game.score+=10; SFX.chip(); puff(c.x,c.y,8,'#35e9ff',160); } }
@@ -295,7 +311,7 @@ function draw(){
   ctx.save();
   if(game.shake>0){ ctx.translate((Math.random()-.5)*game.shake*18,(Math.random()-.5)*game.shake*18); }
   drawBackground();
-  if(game.mode!=='title'){ drawPlatforms(); drawSteam(); drawChips(); drawBoosts(); drawEnemies(); drawPlayer(); drawParticles(); }
+  if(game.mode!=='title'){ drawPlatforms(); drawSteam(); drawChips(); drawBoosts(); drawEnemies(); drawShots(); drawPlayer(); drawParticles(); }
   ctx.restore();
   if(game.flash>0){ ctx.fillStyle=`rgba(255,45,85,${game.flash})`; ctx.fillRect(0,0,W,H); game.flash-=1/60; }
   drawHUD();
@@ -403,7 +419,10 @@ function drawEnemies(){
 }
 function rr(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
 function currentFrame(p){
-  if(p.state==='attack'){ const i=Math.min(5,Math.floor(p.t/.42*6)); return FRAMES.attack[i]; }
+  if(p.state==='attack'){
+    if(p.t<ATK_FIRE){ const i=1+Math.min(5,Math.floor(p.t/ATK_FIRE*6)); return SFR.charge[i].concat('shoot'); }
+    const i=Math.min(3,Math.floor((p.t-ATK_FIRE)/(ATK_TIME-ATK_FIRE)*4)); return SFR.fire[i].concat('shoot');
+  }
   if(p.state==='jump' && p.thrust) return FRAMES.jump[3];
   if(p.state==='jump'){ let i; if(p.vy<-500)i=1; else if(p.vy<-150)i=2; else if(p.vy<150)i=3; else if(p.vy<600)i=4; else i=5; return FRAMES.jump[i]; }
   if(p.state==='duck' || p.landT>0) return FRAMES.jump[0];
@@ -413,7 +432,7 @@ function currentFrame(p){
 function drawPlayer(){
   const p=player; if(!SHEET.complete) return;
   if(p.inv>0 && Math.floor(p.inv*14)%2===0) return;  // blink
-  const f=currentFrame(p), dw=f[2]*SPR_SCALE, dh=f[3]*SPR_SCALE;
+  const f=currentFrame(p), sc=f[4]==='shoot'?SH_SCALE:SPR_SCALE, dw=f[2]*sc, dh=f[3]*sc;
   ctx.save(); ctx.translate(p.x-cam.x, p.y); ctx.scale(p.face,1);
   // shadow
   ctx.fillStyle='rgba(0,0,0,.45)'; ctx.beginPath(); ctx.ellipse(0,2,28,6,0,0,Math.PI*2); ctx.fill();
@@ -425,8 +444,17 @@ function drawPlayer(){
     else { ctx.fillStyle=`rgba(53,233,255,${.4+Math.sin(game.time*12)*.3})`; ctx.fillRect(-30,-38,8,4); }
     ctx.shadowBlur=0;
   }
-  ctx.drawImage(SHEET, f[0],f[1],f[2],f[3], -dw/2, -dh, dw, dh);
+  if(f[4]==='shoot'){ if(SHOOT.complete&&SHOOT.naturalWidth) ctx.drawImage(SHOOT, f[0],f[1],f[2],f[3], -41, -dh, dw, dh); }  // body-left anchored; glow extends forward
+  else ctx.drawImage(SHEET, f[0],f[1],f[2],f[3], -dw/2, -dh, dw, dh);
   ctx.restore();
+}
+function drawShots(){
+  if(!SHOOT.complete||!SHOOT.naturalWidth) return;
+  for(const sh of shots){ const f=SFR.proj[0], dw=f[2]*SH_SCALE, dh=f[3]*SH_SCALE, dir=sh.vx<0?-1:1;
+    ctx.save(); ctx.translate(sh.x-cam.x, sh.y); ctx.scale(dir,1); ctx.globalAlpha=Math.min(1,sh.life*3);
+    ctx.shadowColor='#ff5ac8'; ctx.shadowBlur=18;
+    ctx.drawImage(SHOOT, f[0],f[1],f[2],f[3], 30-dw, -dh/2, dw, dh);   // orb sits at the leading edge, trail behind
+    ctx.restore(); }
 }
 function drawParticles(){ for(const q of parts){ ctx.globalAlpha=Math.min(1,q.life*2); ctx.fillStyle=q.col; ctx.fillRect(q.x-cam.x-q.sz/2,q.y-q.sz/2,q.sz,q.sz); } ctx.globalAlpha=1; }
 function drawHUD(){
@@ -448,8 +476,8 @@ function drawHUD(){
     if(game.mode==='over'){ ctx.fillText('Score '+game.score+'   ·   Distance '+game.dist+' m   ·   Best '+game.best, W/2, 230); }
     else { ctx.fillText('Run the neon grid. Punch the red drones. Grab a fuel tank or egg to fly.', W/2, 230); }
     ctx.fillStyle='#ff2d55'; ctx.font='bold 18px system-ui';
-    ctx.fillText('← →  /  A D   move      SPACE / W / ↑   jump      ↓ / S   duck      V / B / N   punch', W/2, 300);
-    ctx.fillText('Stomp or punch drones   ·   Duck under lasers   ·   Jet booster lasts until you get hit', W/2, 332);
+    ctx.fillText('← →  /  A D   move      SPACE / W / ↑   jump      ↓ / S   duck      V / B / N   shoot', W/2, 300);
+    ctx.fillText('Shoot or stomp drones   ·   Duck under lasers   ·   Jet booster lasts until you get hit', W/2, 332);
     const blink=Math.floor(game.time*2)%2===0; if(blink){ ctx.fillStyle='#fff'; ctx.font='bold 26px system-ui'; ctx.fillText(game.mode==='title'?'PRESS SPACE / ENTER TO START':'PRESS SPACE / ENTER TO RETRY', W/2, 420); }
     if(game.best && game.mode==='title'){ ctx.fillStyle='#35e9ff'; ctx.font='16px system-ui'; ctx.fillText('BEST '+game.best, W/2, 470); }
     // title-screen robot
