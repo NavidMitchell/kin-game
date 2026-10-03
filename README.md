@@ -42,9 +42,17 @@ On touch devices, on-screen buttons appear automatically.
 ## Files
 
 - `index.html` – the whole game (engine, level generator, rendering, synth sound effects).
-- `assets/robot.png` – player sprite sheet (idle 4, run 6, jump 6, attack 6 frames). Frame rectangles were auto-detected from the alpha channel and are inlined in `index.html`.
-- `assets/city.png` – parallax background, tiled horizontally in two layers.
-- `assets/drone.png` – enemy sprite sheet (hover 4, dash 6, laser 4, death 4 frames).
-- `assets/robot_shoot.png` – player energy-shot sheet (charge 7, fire 4, projectile 3 frames).
+- `assets/robot.webp` – player sprite sheet (idle 4, run 6, jump 6, attack 6 frames). Frame rectangles were auto-detected from the alpha channel and are inlined in `index.html`.
+- `assets/city.webp` – parallax background, tiled horizontally in two layers.
+- `assets/drone.webp` – enemy sprite sheet (hover 4, dash 6, laser 4, death 4 frames).
+- `assets/robot_shoot.webp` – player energy-shot sheet (charge 7, fire 4, projectile 3 frames).
 - `assets/title.jpg` – title screen poster.
 - `assets/kinotic-logo.svg` – Kinotic logo shown in the "Powered by" credit on the title screen.
+
+## Standalone file
+
+`dist/kin-runner.html` is the whole game in one file with every asset embedded, so it can be opened directly from disk or emailed. Rebuild it after any change with:
+
+```bash
+python3 build-standalone.py
+```
