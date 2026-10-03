@@ -34,6 +34,7 @@ On touch devices, on-screen buttons appear automatically.
 - Fuel tanks and egg pods grant a jet booster (+50). Hold jump in the air to fly. You keep it until an enemy hits you or you fall.
 - Three hit points. Falling into a pit costs one and respawns you on the last safe ground.
 - Best score is saved in the browser.
+- Synthesised sound effects for jumping (robot chirps), shooting, coins (pitch climbs on quick pickups), stomps, enemy approach warnings, laser charge, and explosions. All generated in code.
 - Original procedural soundtrack, "Neon Grid": a chiptune-synthwave loop with driving octave bass, echoing arpeggios, detuned pads, and a square-wave lead. Press M to mute.
 
 ## Files

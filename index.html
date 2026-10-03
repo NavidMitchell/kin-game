@@ -103,17 +103,52 @@ function thruster(on){
     if(on) THR.bp.frequency.value=(on===2?800:420)+Math.random()*(on===2?300:80);   // flicker, deeper when idling
   }catch(e){}
 }
+// tone with optional delay, wave, filter, slide and vibrato (richer than beep)
+function tone(o){
+  try{
+    if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)();
+    const t=AC.currentTime+(o.at||0), v=AC.createOscillator(), g=AC.createGain(); v.type=o.type||'sine';
+    v.frequency.setValueAtTime(o.f,t); if(o.to) v.frequency.exponentialRampToValueAtTime(Math.max(20,o.to),t+o.dur);
+    if(o.bend){ for(const [k,f] of o.bend) v.frequency.linearRampToValueAtTime(f,t+o.dur*k); }
+    let n=v; if(o.lp){ const fl=AC.createBiquadFilter(); fl.type='lowpass'; fl.frequency.value=o.lp; fl.Q.value=o.q||1; v.connect(fl); n=fl; }
+    const a=o.attack||.004, vol=o.vol||.08;
+    g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol,t+a); g.gain.setValueAtTime(vol,t+Math.max(a,o.dur*.6)); g.gain.exponentialRampToValueAtTime(.0005,t+o.dur);
+    n.connect(g).connect(AC.destination); v.start(t); v.stop(t+o.dur+.02);
+    if(o.vib){ const l=AC.createOscillator(), lg=AC.createGain(); l.frequency.value=o.vibHz||18; lg.gain.value=o.vib; l.connect(lg).connect(v.frequency); l.start(t); l.stop(t+o.dur); }
+  }catch(e){}
+}
+function hiss(o){  // filtered noise burst
+  try{
+    if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)();
+    const t=AC.currentTime+(o.at||0), len=Math.ceil(AC.sampleRate*o.dur), b=AC.createBuffer(1,len,AC.sampleRate), d=b.getChannelData(0); for(let i=0;i<len;i++) d[i]=Math.random()*2-1;
+    const src=AC.createBufferSource(); src.buffer=b; const f=AC.createBiquadFilter(); f.type=o.type||'bandpass'; f.frequency.setValueAtTime(o.f,t); if(o.to) f.frequency.exponentialRampToValueAtTime(o.to,t+o.dur); f.Q.value=o.q||1;
+    const g=AC.createGain(); g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(o.vol||.1,t+(o.attack||.01)); g.gain.exponentialRampToValueAtTime(.0005,t+o.dur);
+    src.connect(f).connect(g).connect(AC.destination); src.start(t); src.stop(t+o.dur);
+  }catch(e){}
+}
+let chipCombo=0, chipComboT=0;
 const SFX = {
-  jump: ()=>beep(300,700,.15,'square'),
-  charge:()=>beep(300,1100,.25,'sine',.06),
-  shoot:()=>{beep(900,200,.22,'sawtooth',.1); beep(1600,500,.15,'square',.05);},
-  hitE: ()=>{beep(500,80,.25,'sawtooth',.12); beep(900,120,.2,'square',.05);},
-  chip: ()=>beep(900,1500,.12,'sine',.09),
-  hurt: ()=>beep(200,40,.4,'sawtooth',.14),
-  land: ()=>beep(120,60,.07,'square',.04),
-  jet:  ()=>{beep(200,900,.35,'sawtooth',.1); beep(600,1400,.4,'sine',.08);},
-  ignite:()=>beep(90,260,.18,'sawtooth',.09),
-  laser:()=>beep(1400,300,.18,'sawtooth',.07),
+  // cute robot: a quick two-note "bwee-oop" chirp, randomly varied so it never sounds canned
+  jump: ()=>{ const b=620+Math.random()*120; tone({type:'triangle',f:b,bend:[[.5,b*1.9],[1,b*1.6]],dur:.14,vol:.09,vib:12}); tone({type:'sine',f:b*2.2,to:b*3,dur:.1,at:.1,vol:.05}); },
+  land: ()=>{ tone({type:'square',f:140,to:70,dur:.07,vol:.045,lp:600}); tone({type:'triangle',f:900,to:500,dur:.05,at:.03,vol:.025}); },
+  stomp:()=>{ tone({type:'triangle',f:220,bend:[[.3,160],[1,520]],dur:.22,vol:.1}); tone({type:'sine',f:1300,to:1900,dur:.12,at:.08,vol:.05}); },
+  // energy ball: rising charge whine + air intake, then a punchy "pew" with a sub thump
+  charge:()=>{ tone({type:'sine',f:240,to:1400,dur:.27,vol:.06,vib:20,vibHz:40}); hiss({f:600,to:4000,dur:.27,vol:.06,q:2}); },
+  shoot:()=>{ tone({type:'square',f:1100,to:180,dur:.2,vol:.1,lp:3500}); tone({type:'sawtooth',f:520,to:90,dur:.18,vol:.06,lp:1200}); tone({type:'sine',f:160,to:50,dur:.14,vol:.12}); hiss({f:3000,to:800,dur:.12,vol:.05}); },
+  // bad guy destroyed: metallic crunch, low boom, noise bloom, then debris crackle
+  hitE: ()=>{ tone({type:'sawtooth',f:480,to:70,dur:.28,vol:.12,lp:1800}); tone({type:'sine',f:120,to:35,dur:.45,vol:.16}); hiss({f:1800,to:150,dur:.45,vol:.16,q:.5});
+              tone({type:'square',f:1200,to:140,dur:.2,vol:.05}); for(let i=0;i<5;i++) hiss({f:2500+Math.random()*2500,dur:.03,at:.12+i*.06+Math.random()*.03,vol:.05,q:3}); },
+  // coins: bright two-note ding; pitch climbs when you grab several quickly
+  chip: ()=>{ chipCombo=chipComboT>0?Math.min(7,chipCombo+1):0; chipComboT=.6; const r=Math.pow(2,chipCombo/12), f=1318*r;
+              tone({type:'sine',f,dur:.09,vol:.08}); tone({type:'sine',f:f*1.5,dur:.26,at:.07,vol:.09}); tone({type:'triangle',f:f*3,dur:.12,at:.07,vol:.02}); },
+  hurt: ()=>{ tone({type:'sawtooth',f:220,to:40,dur:.4,vol:.13,lp:900}); tone({type:'square',f:700,bend:[[.3,500],[.6,650],[1,300]],dur:.3,vol:.05}); hiss({f:400,dur:.25,vol:.08,type:'lowpass'}); },
+  jet:  ()=>{ tone({type:'sawtooth',f:200,to:900,dur:.35,vol:.1,lp:2500}); tone({type:'sine',f:600,to:1400,dur:.4,vol:.08}); tone({type:'triangle',f:1800,to:2600,dur:.25,at:.2,vol:.05}); },
+  ignite:()=>{ tone({type:'sawtooth',f:90,to:260,dur:.18,vol:.09,lp:900}); hiss({f:300,to:1800,dur:.2,vol:.1}); },
+  laserCharge:()=>{ tone({type:'sine',f:500,to:2400,dur:.36,vol:.05,vib:15,vibHz:30}); },
+  laser:()=>{ tone({type:'sawtooth',f:1500,to:300,dur:.18,vol:.07,lp:3000}); hiss({f:4000,to:1000,dur:.1,vol:.04}); },
+  // bad guys approaching: hover drones ping like sonar, skimmers growl
+  droneNear:()=>{ tone({type:'sine',f:1760,to:1700,dur:.12,vol:.06}); tone({type:'sine',f:1320,to:1280,dur:.16,at:.14,vol:.05}); },
+  skimmerNear:()=>{ tone({type:'sawtooth',f:95,bend:[[.5,140],[1,80]],dur:.4,vol:.08,lp:500,vib:8,vibHz:25}); tone({type:'square',f:190,to:120,dur:.3,at:.05,vol:.03,lp:700}); },
 };
 
 // ---------------------------------------------------------------- music ("NEON GRID" — procedural chiptune / synthwave)
@@ -258,7 +293,7 @@ function puff(x,y,n,col,spd=260){ for(let i=0;i<n;i++){ const a=Math.random()*Ma
 
 // ---------------------------------------------------------------- update
 function update(dt){
-  game.time+=dt; jumpBuffer-=dt; atkBuffer-=dt;
+  game.time+=dt; jumpBuffer-=dt; atkBuffer-=dt; chipComboT-=dt;
   if(game.mode!=='play'){ thruster(false); return; }
   const p=player;
 
@@ -331,6 +366,7 @@ function update(dt){
     e.t+=dt;
     if(!e.alive){ e.dieT+=dt; continue; }
     const ey=enemyTop(e), box={x:e.x-e.w/2,y:ey,w:e.w,h:e.h};
+    if(!e.warned && Math.abs(e.x-p.x)<W*.62){ e.warned=true; (e.type==='drone'?SFX.droneNear:SFX.skimmerNear)(); }
     // laser attack (high drones): face the player, charge, fire
     if(e.shootT>0){
       e.shootT+=dt;
@@ -342,7 +378,7 @@ function update(dt){
       e.cool-=dt;
       if(e.type==='drone' && e.cool<=0){
         const dx=p.x-e.x, dy=(p.y-p.h*.5)-(ey+e.h*.5);
-        if(Math.abs(dx)<560 && Math.abs(dx)>60 && Math.abs(dy)<90 && dx>cam.x-e.x-W){ e.shootT=.001; e.fired=false; e.face=dx<0?-1:1; e.cool=rnd(2.2,3.6); }
+        if(Math.abs(dx)<560 && Math.abs(dx)>60 && Math.abs(dy)<90 && dx>cam.x-e.x-W){ e.shootT=.001; e.fired=false; e.face=dx<0?-1:1; e.cool=rnd(2.2,3.6); SFX.laserCharge(); }
       }
     }
     let shot=false;
@@ -350,7 +386,7 @@ function update(dt){
     if(shot){ killEnemy(e,p.face); continue; }
     const ph=p.state==='duck'?50:p.h; const pb={x:p.x-p.w/2+8,y:p.y-ph,w:p.w-16,h:ph};
     if(overlap(pb,box)){
-      if(p.vy>200 && p.y-20 < box.y+box.h*.6){ killEnemy(e,0); p.vy=JUMP_V*.6; }
+      if(p.vy>200 && p.y-20 < box.y+box.h*.6){ killEnemy(e,0); p.vy=JUMP_V*.6; SFX.stomp(); }
       else if(p.inv<=0) hurt(false, e.x<p.x?1:-1);
     }
   }
