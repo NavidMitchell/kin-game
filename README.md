@@ -28,7 +28,7 @@ On touch devices, on-screen buttons appear automatically.
 ## Gameplay
 
 - Endless procedurally generated level: ground runs, pits, stepping platforms, and towers.
-- Two enemy types: ground crawlers and hovering drones. Punch them or stomp them for 100 points.
+- Two drone types: fast ground skimmers and high hover drones that fire lasers when you are level with them. Punch or stomp either for 100 points. Duck under lasers.
 - Cyan data chips are worth 10 points each.
 - Fuel tanks and egg pods grant a jet booster (+50). Hold jump in the air to fly. You keep it until an enemy hits you or you fall.
 - Three hit points. Falling into a pit costs one and respawns you on the last safe ground.
@@ -39,3 +39,4 @@ On touch devices, on-screen buttons appear automatically.
 - `index.html` – the whole game (engine, level generator, rendering, synth sound effects).
 - `assets/robot.png` – player sprite sheet (idle 4, run 6, jump 6, attack 6 frames). Frame rectangles were auto-detected from the alpha channel and are inlined in `index.html`.
 - `assets/city.png` – parallax background, tiled horizontally in two layers.
+- `assets/drone.png` – enemy sprite sheet (hover 4, dash 6, laser 4, death 4 frames).
