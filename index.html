@@ -152,6 +152,7 @@ const SFX = {
 };
 
 // ---------------------------------------------------------------- music ("NEON GRID" — procedural chiptune / synthwave)
+const MUSIC_VOL=.28, MUSIC_DUCK=.11;   // music sits under the sound effects
 const MUSIC={started:false,muted:false,step:0,next:0,bpm:144,timer:null,master:null,arpBus:null,padBus:null,leadBus:null};
 const mf=m=>440*Math.pow(2,(m-69)/12);
 // 8-bar progression in A minor: Am F C G | Am F Dm E   (root midi, chord intervals)
@@ -169,7 +170,7 @@ function musicStart(){
     if(AC.state==='suspended') AC.resume();
     if(MUSIC.started) return;
     const comp=AC.createDynamicsCompressor(); comp.threshold.value=-18; comp.ratio.value=4; comp.connect(AC.destination);
-    MUSIC.master=AC.createGain(); MUSIC.master.gain.value=MUSIC.muted?0:.55; MUSIC.master.connect(comp);
+    MUSIC.master=AC.createGain(); MUSIC.master.gain.value=MUSIC.muted?0:MUSIC_VOL; MUSIC.master.connect(comp);
     // arp bus with a dotted-eighth echo (the Tron shimmer)
     MUSIC.arpBus=AC.createGain(); MUSIC.arpBus.gain.value=.5; MUSIC.arpBus.connect(MUSIC.master);
     const dl=AC.createDelay(1); dl.delayTime.value=60/MUSIC.bpm*.75; const fb=AC.createGain(); fb.gain.value=.38; const dlp=AC.createBiquadFilter(); dlp.type='lowpass'; dlp.frequency.value=2600;
@@ -181,8 +182,8 @@ function musicStart(){
   }catch(e){}
 }
 function musicTick(){ const spb=60/MUSIC.bpm/4; while(MUSIC.next<AC.currentTime+.18){ scheduleStep(MUSIC.step,MUSIC.next,spb); MUSIC.next+=spb; MUSIC.step++; } }
-function musicDuck(on){ if(MUSIC.master&&!MUSIC.muted) MUSIC.master.gain.setTargetAtTime(on?.22:.55,AC.currentTime,.3); }
-function musicToggle(){ MUSIC.muted=!MUSIC.muted; if(MUSIC.master) MUSIC.master.gain.setTargetAtTime(MUSIC.muted?0:.55,AC.currentTime,.05); }
+function musicDuck(on){ if(MUSIC.master&&!MUSIC.muted) MUSIC.master.gain.setTargetAtTime(on?MUSIC_DUCK:MUSIC_VOL,AC.currentTime,.3); }
+function musicToggle(){ MUSIC.muted=!MUSIC.muted; if(MUSIC.master) MUSIC.master.gain.setTargetAtTime(MUSIC.muted?0:MUSIC_VOL,AC.currentTime,.05); }
 function osc(type,freq,t,dur,vol,dest,o={}){
   const v=AC.createOscillator(), g=AC.createGain(); v.type=type; v.frequency.setValueAtTime(freq,t);
   if(o.detune) v.detune.value=o.detune; if(o.slide) v.frequency.exponentialRampToValueAtTime(o.slide,t+dur);
