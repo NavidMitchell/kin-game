@@ -22,6 +22,7 @@ Then open http://localhost:8765. Any other static file server works too.
 | Duck | ↓ or S |
 | Shoot | V, B, or N |
 | Start / retry | Space or Enter |
+| Toggle music | M |
 
 On touch devices, on-screen buttons appear automatically.
 
@@ -33,6 +34,7 @@ On touch devices, on-screen buttons appear automatically.
 - Fuel tanks and egg pods grant a jet booster (+50). Hold jump in the air to fly. You keep it until an enemy hits you or you fall.
 - Three hit points. Falling into a pit costs one and respawns you on the last safe ground.
 - Best score is saved in the browser.
+- Original procedural soundtrack, "Neon Grid": a chiptune-synthwave loop with driving octave bass, echoing arpeggios, detuned pads, and a square-wave lead. Press M to mute.
 
 ## Files
 
