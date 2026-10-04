@@ -10,10 +10,7 @@ import chipMap from '../../assets/world/data-chip.json';
 import shootUrl from '../../assets/robot_shoot.webp';
 import droneUrl from '../../assets/drone.webp';
 import cityUrl from '../../assets/city.webp';
-import towerRed from '../../assets/towers/red.webp';
-import towerMagenta from '../../assets/towers/magenta.webp';
-import towerOrange from '../../assets/towers/orange.webp';
-import towerGreen from '../../assets/towers/green.webp';
+import coolingUrl from '../../assets/towers/cooling.webp';
 import titleUrl from '../../assets/title.jpg';
 import logoSvg from '../../assets/kinotic-logo.svg?raw';
 
@@ -36,11 +33,8 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('shoot-src', shootUrl);
     this.load.image('drone-src', droneUrl);
     this.load.image('city', cityUrl);
-    // tower facades for solid ground; each level picks one with its `wall` map property
-    this.load.image('tower-red', towerRed);
-    this.load.image('tower-magenta', towerMagenta);
-    this.load.image('tower-orange', towerOrange);
-    this.load.image('tower-green', towerGreen);
+    // Neutral cooling machinery picks up each level's accent colour.
+    this.load.image('cooling-tower', coolingUrl);
     // exit gates (gate-cyan ... gate-red-blue); each level picks one with its `gate` map property
     for (const [path, url] of Object.entries(GATE_URLS)) this.load.image('gate-' + path.match(/exit-gate-([\w-]+)\.webp$/)[1], url);
     // platform pieces (plat-cyan-left ...) and ground edges (edge-cyan ...); a level picks a set with `palette`

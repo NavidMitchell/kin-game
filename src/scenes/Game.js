@@ -22,7 +22,7 @@ const CHIP_SCALE = 22 / chipMap.diamondSize;
 // Measured in the art (texture px): a storey repeats every 156.75px, and each one begins with a lit
 // ledge about 25px tall whose top edge first appears at y = 141.
 const WALL_SCALE = 0.5;
-const TOWER = { storey: 1254 / 8, ledge: 25, firstLedge: 141 };
+const TOWER = { storey: 1254 / 4, ledge: 0, firstLedge: 0 };
 const ROOF_H = 10;   // neon roof edge above the first ledge
 // assets/exit-gates/*.webp: the exit gate, drawn GATE.h world px tall (art.js resamples it to that height). Measured in the art as fractions of the image,
 // so a replacement at any resolution still fits: where the base meets the ground, and the open middle
@@ -109,7 +109,7 @@ export class GameScene extends Phaser.Scene {
     this.solids = L.solids; this.movers = [];
 
     // no `wall` map property means no facade: every block gets the plain ground look
-    const wallKey = !L.wall ? null : this.textures.exists('tower-' + L.wall) ? 'tower-' + L.wall : 'tower-red';
+    const wallKey = L.wall ? 'cooling-tower' : null;
     // industrial edge strip along the top of solid ground, its walking surface on the collider's top
     const edge = (s, kind) => {
       const key = `edge-${pal}-${kind}`, m = edgeMetrics(this, pal, kind), th = this.textures.get(key).getSourceImage().height;
@@ -123,7 +123,7 @@ export class GameScene extends Phaser.Scene {
       const z = this.add.zone(s.x + s.w / 2, s.y + s.h / 2, s.w, s.h);
       z.plat = { solid: s };
       this.solidGroup.add(z);
-      // tower facade: whole storeys only, starting on a ledge under the roof edge and ending on one,
+      // cooling facade: whole machinery rows only, starting on a ledge under the roof edge and ending on one,
       // with a plain base below. Blocks too short for a storey, or levels without a wall, keep the plain ground look.
       const storeys = !wallKey ? 0 : Math.floor((s.h - ROOF_H - TOWER.ledge * WALL_SCALE - 8) / (TOWER.storey * WALL_SCALE));
       if (storeys >= 1) {
@@ -131,9 +131,9 @@ export class GameScene extends Phaser.Scene {
         this.add.rectangle(s.x, s.y, s.w, s.h, 0x0b0a10).setOrigin(0).setDepth(DEPTH.plat);
         // x stays world-aligned so neighbouring blocks line up; y starts the texture at a ledge
         this.add.tileSprite(s.x, fy, s.w, fh, wallKey).setOrigin(0).setDepth(DEPTH.plat)
-          .setTileScale(WALL_SCALE, WALL_SCALE).setTilePosition(s.x / WALL_SCALE, TOWER.firstLedge);
+          .setTileScale(WALL_SCALE, WALL_SCALE).setTilePosition(s.x / WALL_SCALE, TOWER.firstLedge).setTint(hexNum(c));
         if (fy + fh < s.y + s.h - 1) this.add.rectangle(s.x, fy + fh, s.w, 2, hexNum(c), .35).setOrigin(0).setDepth(DEPTH.plat);
-        edge(s, 'roof');   // thin, over the roof edge and first ledge, so no windows are hidden
+        edge(s, 'roof');   // thin strip over the roof edge and first machinery row
       } else {
         this.add.rectangle(s.x, s.y, s.w, s.h, 0x0b0a10).setOrigin(0).setDepth(DEPTH.plat);
         edge(s, 'ground');
