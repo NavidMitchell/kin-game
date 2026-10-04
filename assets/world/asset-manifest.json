@@ -15,7 +15,7 @@
       255
     ]
   },
-  "rooftop-strip": {
+  "ground-edge": {
     "width": 2172,
     "height": 724,
     "alphaRange": [
