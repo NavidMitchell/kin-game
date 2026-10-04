@@ -1,4 +1,5 @@
 // Opening story: six illustrated slides shown after the title screen, before level select.
+// Plays once (the first start from the title); level select's S key replays it.
 // Space / Enter / click advances, Esc or the SKIP button skips straight to level select.
 // The captions are part of the art (assets/story/1-6.webp), so slides can be redrawn independently.
 import Phaser from 'phaser';
@@ -6,6 +7,7 @@ import { W, H, HUD_FONT, CYAN } from '../config.js';
 import { SFX } from '../audio/sfx.js';
 import { musicMode } from '../audio/music.js';
 import { onPress, isConfirm, isBack, isShoot, releaseAll } from '../controls.js';
+import { save } from '../save.js';
 import s1 from '../../assets/story/1.webp';
 import s2 from '../../assets/story/2.webp';
 import s3 from '../../assets/story/3.webp';
@@ -85,6 +87,7 @@ export class StoryScene extends Phaser.Scene {
   finish() {
     if (this.leaving) return;
     this.leaving = true; this.auto?.remove();
+    save.markStorySeen();   // watched or skipped: start straight at level select next time
     SFX.confirm(); releaseAll();
     this.cameras.main.fadeOut(FADE / 2, 0, 0, 0);
     this.cameras.main.once('camerafadeoutcomplete', () => this.scene.start('Select'));

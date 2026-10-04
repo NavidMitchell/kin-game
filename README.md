@@ -28,7 +28,7 @@ On touch devices, on-screen buttons appear automatically, including duck and pau
 
 ## Story
 
-Starting from the title screen plays a six-slide opening story before level select. Space, Enter or a click advances; Esc or SKIP jumps straight to level select. Slides advance on their own after a few seconds, except the last, which waits for Space. The slides are `assets/story/1.webp` to `6.webp`.
+The first time you start from the title screen, a six-slide opening story plays before level select. After that it's skipped; press S on level select to watch it again. Space, Enter or a click advances; Esc or SKIP jumps straight to level select. Slides advance on their own after a few seconds, except the last, which waits for Space. The slides are `assets/story/1.webp` to `6.webp`.
 
 ## Levels
 

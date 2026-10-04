@@ -1,4 +1,4 @@
-// Progress saved in the browser: highest unlocked level and best score per level.
+// Progress saved in the browser: highest unlocked level, best score per level, and whether the story was seen.
 const KEY = 'kin_save_v2';
 
 function read() {
@@ -11,6 +11,8 @@ function write(data) {
 export const save = {
   unlocked() { return read().unlocked || 1; },
   best(level) { return (read().best || {})[level] || 0; },
+  storySeen() { return !!read().storySeen; },
+  markStorySeen() { const d = read(); d.storySeen = true; write(d); },
   totalBest() { return Object.values(read().best || {}).reduce((a, b) => a + b, 0); },
   // records a finished level; returns true when it is a new best
   complete(level, score, levelCount) {

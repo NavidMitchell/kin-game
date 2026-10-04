@@ -33,7 +33,7 @@ Sound effects and music are synthesised in code on purpose (`src/audio/`). Ask b
 
 ## Story
 
-The opening story (`src/scenes/Story.js`) plays after the title screen and can be skipped. Its six slides are `assets/story/1-6.webp`, with captions painted into the art. `6.webp` is a stand-in until the real slide is added.
+The opening story (`src/scenes/Story.js`) plays the first time the player starts from the title screen (remembered in `src/save.js`). It can be skipped, and S on level select replays it. Its six slides are `assets/story/1-6.webp`, with captions painted into the art.
 
 ## Levels
 
