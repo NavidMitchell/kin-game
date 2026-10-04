@@ -1,7 +1,8 @@
-// Loads the images, waits for the HUD font, then bakes every texture the game uses.
+// Loads the images, waits for the HUD font, then sizes the artwork and bakes every texture the game uses.
 import Phaser from 'phaser';
 import { W, H } from '../config.js';
 import { bakeSprites, bakeProps, bakeScreens } from '../gfx/textures.js';
+import { fitArt, PROPS } from '../gfx/art.js';
 import robotUrl from '../../assets/robot.webp';
 import shootUrl from '../../assets/robot_shoot.webp';
 import droneUrl from '../../assets/drone.webp';
@@ -10,13 +11,15 @@ import towerRed from '../../assets/towers/red.webp';
 import towerMagenta from '../../assets/towers/magenta.webp';
 import towerOrange from '../../assets/towers/orange.webp';
 import towerGreen from '../../assets/towers/green.webp';
-import gateCyan from '../../assets/gates/cyan.webp';
-import gateMagenta from '../../assets/gates/magenta.webp';
-import gateOrange from '../../assets/gates/orange.webp';
-import gateGreen from '../../assets/gates/green.webp';
-import gateRedBlue from '../../assets/gates/red-blue.webp';
 import titleUrl from '../../assets/title.jpg';
 import logoSvg from '../../assets/kinotic-logo.svg?raw';
+
+// world artwork, found by path: { '../../assets/platform/cyan/left.webp': url, ... }
+const GATE_URLS = import.meta.glob('../../assets/exit-gates/exit-gate-*.webp', { eager: true, import: 'default' });
+const PLATFORM_URLS = import.meta.glob('../../assets/platform/*/*.webp', { eager: true, import: 'default' });
+const EDGE_URLS = import.meta.glob('../../assets/world/ground-rooftop/*/ground-edge.webp', { eager: true, import: 'default' });
+// (jetpack.webp isn't used yet: the worn jet pack is still drawn in textures.js)
+const WORLD_URLS = import.meta.glob(['../../assets/world/*.webp', '!**/jetpack.webp'], { eager: true, import: 'default' });
 
 export class PreloadScene extends Phaser.Scene {
   constructor() { super('Preload'); }
@@ -34,12 +37,16 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('tower-magenta', towerMagenta);
     this.load.image('tower-orange', towerOrange);
     this.load.image('tower-green', towerGreen);
-    // exit gates; each level picks one with its `gate` map property
-    this.load.image('gate-cyan', gateCyan);
-    this.load.image('gate-magenta', gateMagenta);
-    this.load.image('gate-orange', gateOrange);
-    this.load.image('gate-green', gateGreen);
-    this.load.image('gate-red-blue', gateRedBlue);
+    // exit gates (gate-cyan ... gate-red-blue); each level picks one with its `gate` map property
+    for (const [path, url] of Object.entries(GATE_URLS)) this.load.image('gate-' + path.match(/exit-gate-([\w-]+)\.webp$/)[1], url);
+    // platform pieces (plat-cyan-left ...) and ground edges (edge-cyan ...); a level picks a set with `palette`
+    for (const [path, url] of Object.entries(PLATFORM_URLS)) {
+      const [, palette, part] = path.match(/platform\/(\w+)\/(\w+)\.webp$/);
+      this.load.image(`plat-${palette}-${part}`, url);
+    }
+    for (const [path, url] of Object.entries(EDGE_URLS)) this.load.image('edge-' + path.match(/ground-rooftop\/(\w+)\//)[1], url);
+    // checkpoints and pickups, under the keys the game uses (see PROPS)
+    for (const [key, p] of Object.entries(PROPS)) this.load.image(key, WORLD_URLS[`../../assets/world/${p.file}.webp`]);
     this.load.image('title', titleUrl);
     // Phaser decodes data: URIs as base64, so hand it the SVG that way (works in the single-file build too)
     this.load.svg('logo', 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(logoSvg))), { width: 480 });
@@ -53,6 +60,7 @@ export class PreloadScene extends Phaser.Scene {
         new Promise(r => setTimeout(r, 2500)),
       ]);
     } catch { /* font unavailable */ }
+    fitArt(this);
     bakeSprites(this);
     bakeProps(this);
     bakeScreens(this, W, H);

@@ -6,7 +6,8 @@ import { findPits } from '../levels/parse.js';
 import { Player } from '../entities/Player.js';
 import { Enemy } from '../entities/Enemy.js';
 import { Fx } from '../gfx/fx.js';
-import { groundTop, floatPlat, pitShaft, beacon, wallTrim, setAnchoredFrame, GTOP_H, GTOP_PAD, FLOAT_H, FLOAT_PAD } from '../gfx/textures.js';
+import { pitShaft, wallTrim, setAnchoredFrame } from '../gfx/textures.js';
+import { deckTexture, edgeMetrics, propOrigin, FLOAT_H, PLAT_PAD_X, PLAT_PAD_TOP, EGG_CORE_Y, GATE_H } from '../gfx/art.js';
 import { hexNum } from '../gfx/draw.js';
 import { SFX, sfxTick, thruster } from '../audio/sfx.js';
 import { musicMode, musicSetLevel } from '../audio/music.js';
@@ -21,10 +22,10 @@ const BOOST_RESPAWN = 5;
 const WALL_SCALE = 0.5;
 const TOWER = { storey: 1254 / 8, ledge: 25, firstLedge: 141 };
 const ROOF_H = 10;   // neon roof edge above the first ledge
-// assets/gates/*.webp: the exit gate, drawn GATE.h world px tall. Measured in the art as fractions of the image,
+// assets/exit-gates/*.webp: the exit gate, drawn GATE.h world px tall (art.js resamples it to that height). Measured in the art as fractions of the image,
 // so a replacement at any resolution still fits: where the base meets the ground, and the open middle
 // (including the frame's inner glow) where the portal light goes.
-const GATE = { h: 340, ground: .942, open: { x0: .305, x1: .705, y0: .155, y1: .905 } };
+const GATE = { h: GATE_H, ground: .942, open: { x0: .305, x1: .705, y0: .155, y1: .905 } };
 
 export class GameScene extends Phaser.Scene {
   constructor() { super('Game'); }
@@ -99,7 +100,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   buildTerrain() {
-    const L = this.level, c = this.color;
+    const L = this.level, c = this.color, pal = L.palette;
     this.solidGroup = this.physics.add.staticGroup();
     this.floatGroup = this.physics.add.staticGroup();
     this.moverGroup = this.physics.add.group({ allowGravity: false, immovable: true, frictionX: 1 });   // frictionX 1: riders move with the lift
@@ -107,6 +108,11 @@ export class GameScene extends Phaser.Scene {
 
     // no `wall` map property means no facade: every block gets the plain ground look
     const wallKey = !L.wall ? null : this.textures.exists('tower-' + L.wall) ? 'tower-' + L.wall : 'tower-red';
+    // industrial edge strip along the top of solid ground, its walking surface on the collider's top
+    const edge = (s, kind) => {
+      const key = `edge-${pal}-${kind}`, m = edgeMetrics(this, pal, kind), th = this.textures.get(key).getSourceImage().height;
+      this.add.tileSprite(s.x, s.y - m.land, s.w, th, key).setOrigin(0).setDepth(DEPTH.plat).setTilePosition(s.x % m.tileW, 0);   // world-aligned repeats
+    };
     for (const s of L.solids) {
       const z = this.add.zone(s.x + s.w / 2, s.y + s.h / 2, s.w, s.h);
       z.plat = { solid: s };
@@ -117,15 +123,14 @@ export class GameScene extends Phaser.Scene {
       if (storeys >= 1) {
         const fy = s.y + ROOF_H, fh = (storeys * TOWER.storey + TOWER.ledge) * WALL_SCALE;
         this.add.rectangle(s.x, s.y, s.w, s.h, 0x0b0a10).setOrigin(0).setDepth(DEPTH.plat);
-        this.add.tileSprite(s.x, s.y - GTOP_PAD, s.w, ROOF_H + GTOP_PAD, groundTop(this, c)).setOrigin(0).setDepth(DEPTH.plat).setTilePosition(s.x % 120, 0);
         // x stays world-aligned so neighbouring blocks line up; y starts the texture at a ledge
         this.add.tileSprite(s.x, fy, s.w, fh, wallKey).setOrigin(0).setDepth(DEPTH.plat)
           .setTileScale(WALL_SCALE, WALL_SCALE).setTilePosition(s.x / WALL_SCALE, TOWER.firstLedge);
         if (fy + fh < s.y + s.h - 1) this.add.rectangle(s.x, fy + fh, s.w, 2, hexNum(c), .35).setOrigin(0).setDepth(DEPTH.plat);
+        edge(s, 'roof');   // thin, over the roof edge and first ledge, so no windows are hidden
       } else {
-        const topH = Math.min(GTOP_H, s.h);
-        this.add.tileSprite(s.x, s.y - GTOP_PAD, s.w, topH + GTOP_PAD, groundTop(this, c)).setOrigin(0).setDepth(DEPTH.plat).setTilePosition(s.x % 120, 0);
-        if (s.h > GTOP_H) this.add.rectangle(s.x, s.y + GTOP_H, s.w, s.h - GTOP_H, 0x0b0a10).setOrigin(0).setDepth(DEPTH.plat);
+        this.add.rectangle(s.x, s.y, s.w, s.h, 0x0b0a10).setOrigin(0).setDepth(DEPTH.plat);
+        edge(s, 'ground');
       }
       // neon trim down any side that faces open air
       for (const side of [-1, 1]) {
@@ -145,12 +150,13 @@ export class GameScene extends Phaser.Scene {
       z.plat = { float: f };
       this.floatGroup.add(z);
       oneWay(z.body);
-      this.add.image(f.x - FLOAT_PAD, f.y - FLOAT_PAD, floatPlat(this, f.w, c)).setOrigin(0).setDepth(DEPTH.plat);
+      this.add.image(f.x - PLAT_PAD_X, f.y - PLAT_PAD_TOP, deckTexture(this, f.w, pal)).setOrigin(0).setDepth(DEPTH.plat);
     }
     for (const m of L.movers) {
-      const img = this.add.image(m.x - FLOAT_PAD, m.y - FLOAT_PAD, floatPlat(this, m.w, c, true)).setOrigin(0).setDepth(DEPTH.plat);
+      // the deck and its thruster pods are one image, so the whole lift moves with its body
+      const img = this.add.image(m.x - PLAT_PAD_X, m.y - PLAT_PAD_TOP, deckTexture(this, m.w, pal, true)).setOrigin(0).setDepth(DEPTH.plat);
       this.moverGroup.add(img);
-      img.body.setSize(m.w, FLOAT_H).setOffset(FLOAT_PAD, FLOAT_PAD);
+      img.body.setSize(m.w, FLOAT_H).setOffset(PLAT_PAD_X, PLAT_PAD_TOP);
       oneWay(img.body);
       img.plat = { mover: img };
       img.def = m;
@@ -169,7 +175,7 @@ export class GameScene extends Phaser.Scene {
     this.moverT += dt;
     for (const img of this.movers) {
       const [tx, ty] = this.moverPos(img.def, this.moverT + (snap ? 0 : dt));
-      if (snap || dt <= 0) { img.body.reset(tx - FLOAT_PAD, ty - FLOAT_PAD); img.body.setVelocity(0, 0); continue; }
+      if (snap || dt <= 0) { img.body.reset(tx - PLAT_PAD_X, ty - PLAT_PAD_TOP); img.body.setVelocity(0, 0); continue; }
       img.body.setVelocity((tx - img.body.x) / dt, (ty - img.body.y) / dt);
     }
   }
@@ -242,11 +248,10 @@ export class GameScene extends Phaser.Scene {
 
     // checkpoints
     this.beacons = L.checkpoints.map((cp, i) => {
-      const on = i <= this.cpIndex;
-      const img = this.add.image(cp.x, cp.y, beacon(this, on)).setOrigin(.5, 136 / 150).setDepth(DEPTH.deco);
+      const on = i <= this.cpIndex, key = on ? 'beacon-on' : 'beacon-off';
+      const img = this.add.image(cp.x, cp.y, key).setOrigin(...propOrigin(key)).setDepth(DEPTH.deco);
       return { ...cp, i, on, img };
     });
-    beacon(this, true);
 
     // hints
     for (const h of L.hints) {
@@ -260,12 +265,13 @@ export class GameScene extends Phaser.Scene {
     this.enemies = L.enemies.map(e => new Enemy(this, e));
     this.chips = L.chips.map(ch => ({ ...ch, t: Math.random() * 6, img: this.add.image(ch.x, ch.y, 'chip').setDepth(DEPTH.pickup) }));
     this.boosts = L.boosts.map(b => {
-      const img = this.add.image(b.x, b.y, b.type).setOrigin(.5, 80 / 102).setDepth(DEPTH.pickup);
-      const core = b.type === 'egg' ? this.add.image(b.x, b.y - 30, 'egg-core').setDepth(DEPTH.pickup) : null;
+      // the egg's core goes in first so the shell frames it; it glows in the shell's opening
+      const core = b.type === 'egg' ? this.add.image(b.x, b.y + EGG_CORE_Y, 'egg-core').setOrigin(...propOrigin('egg-core')).setDepth(DEPTH.pickup) : null;
+      const img = this.add.image(b.x, b.y, b.type).setOrigin(...propOrigin(b.type)).setDepth(DEPTH.pickup);
       return { ...b, t: Math.random() * 6, img, core, respawn: 0 };
     });
     this.repairs = L.repairs.map(r => {
-      const img = this.add.image(r.x, r.y - 40, 'repair').setDepth(DEPTH.pickup);
+      const img = this.add.image(r.x, r.y - 40, 'repair').setOrigin(...propOrigin('repair')).setDepth(DEPTH.pickup);
       return { ...r, t: Math.random() * 6, img, got: false };
     });
     this.shots = []; this.lasers = [];
@@ -409,7 +415,7 @@ export class GameScene extends Phaser.Scene {
     // checkpoints
     for (const b of this.beacons) {
       if (!b.on && p.x >= b.x && Math.abs(p.y - b.y) < 220) {
-        b.on = true; b.img.setTexture('beacon-on'); this.cpIndex = Math.max(this.cpIndex, b.i);
+        b.on = true; b.img.setTexture('beacon-on').setOrigin(...propOrigin('beacon-on')); this.cpIndex = Math.max(this.cpIndex, b.i);
         this.cpSnapshot = { ...this.stats };
         this.lastSafe = { x: b.x, y: b.y };
         SFX.checkpoint(); this.fx.puff(b.x, b.y - 112, 18, '#35e9ff', 220);
@@ -486,7 +492,7 @@ export class GameScene extends Phaser.Scene {
       }
       const y = b.y + Math.sin(b.t * 2.5) * 3;
       b.img.setY(y);
-      if (b.core) b.core.setY(y - 30).setAlpha(.6 + Math.sin(b.t * 4) * .4);
+      if (b.core) b.core.setY(y + EGG_CORE_Y).setAlpha(.75 + Math.sin(b.t * 4) * .25).setScale(1 + Math.sin(b.t * 4) * .05);
       if (playing && !p.jet && Math.abs(b.x - p.x) < 40 && Math.abs((b.y - 30) - (p.y - 50)) < 70) {
         p.jet = true; b.respawn = BOOST_RESPAWN; b.img.setVisible(false); b.core?.setVisible(false);
         this.addScore(50, b.x, b.y - 60, '+50  JET', '#35e9ff', 14);

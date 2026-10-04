@@ -64,7 +64,7 @@ Levels are [Tiled](https://www.mapeditor.org) maps in `src/levels/level1.json` t
   - `chips`, with properties `count`, `spacing`, `arc`
   - `tank`, `egg`, `repair`
   - `hint`, with property `text`
-- **Map properties**: `name`, `subtitle`, `color`, `bgHue`, `bgTint`, `wall` (optional tower art for solid ground: `red`, `magenta`, `orange` or `green`, from `assets/towers/`; leave it out for plain ground, as every level but The Spire does), `gate` (exit gate art: `cyan`, `magenta`, `orange`, `green` or `red-blue`, from `assets/gates/`; default `cyan`), `bpm`, `transpose`, `par`.
+- **Map properties**: `name`, `subtitle`, `color`, `bgHue`, `bgTint`, `wall` (optional tower art for solid ground: `red`, `magenta`, `orange` or `green`, from `assets/towers/`; leave it out for plain ground, as every level but The Spire does), `gate` (exit gate art: `cyan`, `magenta`, `orange`, `green` or `red-blue`, from `assets/exit-gates/`; default `cyan`), `palette` (platform and ground-edge art: `cyan`, `magenta`, `orange`, `green` or `red`, from `assets/platform/` and `assets/world/ground-rooftop/`; default `cyan`), `bpm`, `transpose`, `par`.
 
 Gaps between pieces of `ground` that reach the bottom of the map become glowing pits automatically. After editing, run:
 
@@ -84,12 +84,13 @@ src/controls.js         keyboard + touch input
 src/save.js             unlocked levels and best scores (localStorage)
 src/scenes/             Preload, Title, Story, Select, Game, HUD, Result (clear / game over / pause)
 src/entities/           Player (Arcade body + visuals), Enemy (drones and skimmers)
-src/gfx/                texture baking (neon props, glowing sprite atlases), particles, canvas drawing helpers
+src/gfx/                art.js (artwork crops, sizes, platform assembly), texture baking (glowing sprite atlases,
+                        light effects), particles, canvas drawing helpers
 src/audio/              synthesised sound effects and music
 src/levels/             Tiled maps + parser
 tools/                  level checker, single-file build step
-assets/                 sprite sheets, background, tower facades (towers/), exit gates (gates/: 680px copies of the full-size
-                        masters in colored-exit-gates-webp/), story slides, title poster, logo
+assets/                 sprite sheets, background, tower facades (towers/), exit gates (exit-gates/), modular platform
+                        pieces (platform/), checkpoints, pickups and ground edges (world/), story slides, title, logo
 ```
 
 ## Building

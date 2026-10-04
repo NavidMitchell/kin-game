@@ -57,6 +57,11 @@
    "name": "gate",
    "type": "string",
    "value": "red-blue"
+  },
+  {
+   "name": "palette",
+   "type": "string",
+   "value": "red"
   }
  ],
  "layers": [
