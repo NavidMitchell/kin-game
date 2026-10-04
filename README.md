@@ -95,3 +95,9 @@ npm run build:standalone   # dist/kin-runner.html: the whole game in one file, e
 ```
 
 `dist/kin-runner.html` can be opened straight from disk or emailed. Rebuild it after making changes.
+
+## GitHub Pages
+
+`.github/workflows/pages.yml` runs on every push to `main` (or by hand from the Actions tab). It checks the levels, builds the site and publishes it to GitHub Pages at `https://<owner>.github.io/<repo>/`. The single-file version is published alongside it as `kin-runner.html`.
+
+One-time setup: in the repository's **Settings → Pages**, set **Source** to **GitHub Actions**.
