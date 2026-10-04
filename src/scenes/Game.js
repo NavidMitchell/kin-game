@@ -133,6 +133,15 @@ export class GameScene extends Phaser.Scene {
         this.add.tileSprite(s.x, fy, s.w, fh, wallKey).setOrigin(0).setDepth(DEPTH.plat)
           .setTileScale(WALL_SCALE, WALL_SCALE).setTilePosition(s.x / WALL_SCALE, TOWER.firstLedge).setTint(hexNum(c));
         if (fy + fh < s.y + s.h - 1) this.add.rectangle(s.x, fy + fh, s.w, 2, hexNum(c), .35).setOrigin(0).setDepth(DEPTH.plat);
+        // Fit complete pipe assemblies across the block; leave partial bottom rows
+        // as plain cooling panels so elbows and fittings never get cut in half.
+        const columns = Math.ceil(s.w / 320), assembly = s.w / columns;
+        for (let row = 0; row < Math.floor(fh / assembly); row++) {
+          for (let col = 0; col < columns; col++) {
+            this.add.image(s.x + col * assembly, fy + row * assembly, 'cooling-pipes')
+              .setOrigin(0).setDisplaySize(assembly, assembly).setTint(hexNum(c)).setDepth(DEPTH.plat);
+          }
+        }
         // Vent outlets follow the world-aligned panel grid, never clipped block edges.
         const panel = TOWER.storey * WALL_SCALE;
         for (let row = 0; row < storeys; row++) {
