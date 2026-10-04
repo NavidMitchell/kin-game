@@ -308,11 +308,11 @@ export class GameScene extends Phaser.Scene {
     this.chips = L.chips.map(ch => ({ ...ch, t: Math.random() * 6, plasmaT: Math.random() * .1, plasma: this.fx.createChipPlasma(ch.x, ch.y), img: this.add.image(ch.x, ch.y, 'chip', 0).setOrigin(...chipMap.origin).setScale(CHIP_SCALE).setDepth(DEPTH.pickup) }));
     this.boosts = L.boosts.map(b => {
       const img = this.add.image(b.x, b.y, b.type).setOrigin(...propOrigin(b.type)).setDepth(DEPTH.pickup);
-      return { ...b, t: Math.random() * 6, img, respawn: 0 };
+      return { ...b, t: Math.random() * 6, img, plasma: this.fx.createChipPlasma(b.x, b.y - 30), plasmaT: 0, respawn: 0 };
     });
     this.repairs = L.repairs.map(r => {
       const img = this.add.image(r.x, r.y - 40, 'repair').setOrigin(...propOrigin('repair')).setDepth(DEPTH.pickup);
-      return { ...r, t: Math.random() * 6, img, got: false };
+      return { ...r, t: Math.random() * 6, img, plasma: this.fx.createChipPlasma(r.x, r.y - 40), plasmaT: 0, got: false };
     });
     this.shots = []; this.lasers = [];
   }
@@ -530,22 +530,15 @@ export class GameScene extends Phaser.Scene {
       c.img.setPosition(c.x, c.y + Math.sin(c.t * 3) * 4)
         .setScale(CHIP_SCALE)
         .setFrame(chipMap.animations.idle.start + Math.floor(c.t * chipMap.animations.idle.frameRate) % chipMap.frameCount);
-      c.plasma.setPosition(c.x, c.img.y);
+      const widths = [22, 18, 7, 18, 22, 18, 7, 18];
+      this.fx.updatePickupPlasma(c, dt, widths[c.img.frame.name] || 22);
       if (playing && Math.hypot(c.x - p.x, c.y - (p.y - 50)) < 11 + 34) {
         c.got = true; c.img.destroy(); c.plasma.destroy(); this.stats.chips++;
         this.addScore(10, c.x, c.y - 10, '+10', '#35e9ff', 12);
         SFX.chip(); this.fx.puff(c.x, c.y, 8, '#35e9ff', 160);
       }
 
-      c.plasmaT -= dt;
-      const view = this.cameras.main.worldView;
-      if (!c.got && c.plasmaT <= 0 && c.x >= view.x - 30 && c.x <= view.right + 30
-        && c.img.y >= view.y - 30 && c.img.y <= view.bottom + 30) {
-        // Match the wisp footprint to the actual face/edge rotation frame.
-        const widths = [22, 18, 7, 18, 22, 18, 7, 18];
-        this.fx.chipPlasma(c.plasma, widths[c.img.frame.name] || 22);
-        c.plasmaT = .1;
-      }
+
     }
     this.chips = this.chips.filter(c => !c.got);
 
@@ -558,8 +551,9 @@ export class GameScene extends Phaser.Scene {
       }
       const y = b.y + Math.sin(b.t * 2.5) * 3;
       b.img.setY(y);
+      this.fx.updatePickupPlasma(b, dt, 26, -30);
       if (playing && !p.jet && Math.abs(b.x - p.x) < 40 && Math.abs((b.y - 30) - (p.y - 50)) < 70) {
-        p.jet = true; b.respawn = BOOST_RESPAWN; b.img.setVisible(false);
+        p.jet = true; b.respawn = BOOST_RESPAWN; b.img.setVisible(false); b.plasma.killAll();
         this.addScore(50, b.x, b.y - 60, '+50  JET', '#35e9ff', 14);
         SFX.jet(); this.shake(.25);
         this.fx.puff(b.x, b.y - 30, 26, '#35e9ff', 300); this.fx.puff(b.x, b.y - 30, 10, '#ffffff', 180);
@@ -571,8 +565,9 @@ export class GameScene extends Phaser.Scene {
       if (r.got) continue;
       r.t += dt;
       r.img.setY(r.y - 40 + Math.sin(r.t * 2.5) * 4).setAngle(Math.sin(r.t * 1.5) * 8);
+      this.fx.updatePickupPlasma(r, dt, 28);
       if (playing && this.hp < MAX_HP && Math.abs(r.x - p.x) < 40 && Math.abs((r.y - 40) - (p.y - 50)) < 70) {
-        r.got = true; r.img.destroy(); this.hp++;
+        r.got = true; r.img.destroy(); r.plasma.destroy(); this.hp++;
         this.fx.pop(r.x, r.y - 60, '+1 CORE', '#35e9ff', 14);
         SFX.repair(); this.fx.puff(r.x, r.y - 40, 18, '#35e9ff', 220);
       }
