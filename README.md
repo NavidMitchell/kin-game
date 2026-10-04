@@ -46,7 +46,7 @@ The first time you start from the title screen, a six-slide opening story plays 
 - Checkpoint beacons: if you run out of lives, Retry resumes at the last checkpoint you reached, with the score you had there.
 - Two drone types: fast ground skimmers and hover drones that fire lasers when you are level with them. Shoot or stomp either for 100 points. Your shots also knock lasers out of the air. Duck under lasers, or hide behind pillars.
 - Cyan data chips are worth 10 points each.
-- Fuel tanks and egg pods give a jet booster (+50). Hold jump in the air to fly. You keep it until something hits you. Boosters respawn a few seconds after pickup, so a failed flight can always be retried.
+- Fuel tanks give a jet booster (+50). Hold jump in the air to fly. You keep it until something hits you. Boosters respawn a few seconds after pickup, so a failed flight can always be retried.
 - Each level has its own colour palette, music key and tempo.
 - All sound effects and the "Neon Grid" soundtrack are synthesised in code with WebAudio.
 
@@ -62,7 +62,7 @@ Levels are [Tiled](https://www.mapeditor.org) maps in `src/levels/level1.json` t
   - `start`, `exit`, `checkpoint`
   - `drone` and `skimmer`, with property `range`
   - `chips`, with properties `count`, `spacing`, `arc`
-  - `tank`, `egg`, `repair`
+  - `tank`, `repair`
   - `hint`, with property `text`
 - **Map properties**: `name`, `subtitle`, `color`, `bgHue`, `bgTint`, `wall` (optional tower art for solid ground: `red`, `magenta`, `orange` or `green`, from `assets/towers/`; leave it out for plain ground, as every level but The Spire does), `gate` (exit gate art: `cyan`, `magenta`, `orange`, `green` or `red-blue`, from `assets/exit-gates/`; default `cyan`), `palette` (platform and ground-edge art: `cyan`, `magenta`, `orange`, `green` or `red`, from `assets/platform/` and `assets/world/ground-rooftop/`; default `cyan`), `bpm`, `transpose`, `par`.
 

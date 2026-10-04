@@ -10,7 +10,7 @@
 //     start, exit, checkpoint
 //     drone | skimmer   range (px each side of x it patrols)
 //     chips             count, spacing (px, default 48), arc (bool, default true)
-//     tank | egg        jet booster (respawns a few seconds after pickup)
+//     tank              jet booster (respawns a few seconds after pickup)
 //     repair            restores one life core
 //     hint              text (shown in the world)
 // Map properties: name, subtitle, color, bgTint, bgHue (degrees), wall (optional tower art: red | magenta | orange | green; none = plain ground),
@@ -53,7 +53,7 @@ export function parseLevel(map, index) {
           for (let i = 0; i < n; i++) L.chips.push({ x: x + i * sp, y: y - (arc ? Math.sin(i / (n - 1 || 1) * Math.PI) * 30 : 0) });
           break;
         }
-        case 'tank': case 'egg': L.boosts.push({ type: k, x, y }); break;
+        case 'tank': case 'egg': L.boosts.push({ type: 'tank', x, y }); break; // legacy maps use the fuel artwork too
         case 'repair': L.repairs.push({ x, y }); break;
         case 'hint': L.hints.push({ x, y, text: p.text || o.name || '' }); break;
         default: console.warn(`Level ${index + 1}: unknown object type "${k}"`);

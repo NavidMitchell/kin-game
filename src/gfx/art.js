@@ -44,12 +44,8 @@ export const PROPS = {
   'beacon-off': { file: 'checkpoint-inactive', crop: [144, 88, 600, 1542], scale: BEACON, anchor: [444, 1630] },
   'beacon-on': { file: 'checkpoint-active', crop: [142, 77, 604, 1609], scale: BEACON, anchor: [444, 1686] },
   'tank': { file: 'jet-fuel', crop: [182, 101, 701, 1343], scale: 56 / 1335, anchor: [532, 1444] },
-  'egg': { file: 'egg-shell', crop: [1, 26, 1022, 1459], scale: 58 / 1451, anchor: [512, 1485] },
-  // the core fills about 90% of the shell's opening (348x722 source px, centred 30 world px above the base)
-  'egg-core': { file: 'egg-core', crop: [169, 104, 654, 1374], scale: 26 / 1301, anchor: [496, 790] },
   'repair': { file: 'repair-module', crop: [142, 186, 971, 881], scale: 42 / 955, anchor: [627, 626] },
 };
-export const EGG_CORE_Y = -30;   // core centre above the egg's base (world px): the middle of the shell's opening
 
 // origin for an image drawn with a PROPS texture, so (x, y) lands on the prop's anchor point
 export function propOrigin(key) {

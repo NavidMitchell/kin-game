@@ -8,7 +8,7 @@ import { Player } from '../entities/Player.js';
 import { Enemy } from '../entities/Enemy.js';
 import { Fx } from '../gfx/fx.js';
 import { pitShaft, wallTrim, setAnchoredFrame } from '../gfx/textures.js';
-import { pillarTexture, thrusterPorts, deckTexture, edgeMetrics, propOrigin, FLOAT_H, PLAT_PAD_X, PLAT_PAD_TOP, EGG_CORE_Y, GATE_H, EDGE_LIGHT } from '../gfx/art.js';
+import { pillarTexture, thrusterPorts, deckTexture, edgeMetrics, propOrigin, FLOAT_H, PLAT_PAD_X, PLAT_PAD_TOP, GATE_H, EDGE_LIGHT } from '../gfx/art.js';
 import { hexNum } from '../gfx/draw.js';
 import { SFX, sfxTick, thruster } from '../audio/sfx.js';
 import { musicMode, musicSetLevel } from '../audio/music.js';
@@ -307,10 +307,8 @@ export class GameScene extends Phaser.Scene {
     this.enemies = L.enemies.map(e => new Enemy(this, e));
     this.chips = L.chips.map(ch => ({ ...ch, t: Math.random() * 6, plasmaT: Math.random() * .1, plasma: this.fx.createChipPlasma(ch.x, ch.y), img: this.add.image(ch.x, ch.y, 'chip', 0).setOrigin(...chipMap.origin).setScale(CHIP_SCALE).setDepth(DEPTH.pickup) }));
     this.boosts = L.boosts.map(b => {
-      // the egg's core goes in first so the shell frames it; it glows in the shell's opening
-      const core = b.type === 'egg' ? this.add.image(b.x, b.y + EGG_CORE_Y, 'egg-core').setOrigin(...propOrigin('egg-core')).setDepth(DEPTH.pickup) : null;
       const img = this.add.image(b.x, b.y, b.type).setOrigin(...propOrigin(b.type)).setDepth(DEPTH.pickup);
-      return { ...b, t: Math.random() * 6, img, core, respawn: 0 };
+      return { ...b, t: Math.random() * 6, img, respawn: 0 };
     });
     this.repairs = L.repairs.map(r => {
       const img = this.add.image(r.x, r.y - 40, 'repair').setOrigin(...propOrigin('repair')).setDepth(DEPTH.pickup);
@@ -555,14 +553,13 @@ export class GameScene extends Phaser.Scene {
       b.t += dt;
       if (b.respawn > 0) {
         b.respawn -= dt;
-        if (b.respawn <= 0) { b.img.setVisible(true); b.core?.setVisible(true); this.fx.puff(b.x, b.y - 30, 12, '#35e9ff', 160); }
+        if (b.respawn <= 0) { b.img.setVisible(true); this.fx.puff(b.x, b.y - 30, 12, '#35e9ff', 160); }
         continue;
       }
       const y = b.y + Math.sin(b.t * 2.5) * 3;
       b.img.setY(y);
-      if (b.core) b.core.setY(y + EGG_CORE_Y).setAlpha(.75 + Math.sin(b.t * 4) * .25).setScale(1 + Math.sin(b.t * 4) * .05);
       if (playing && !p.jet && Math.abs(b.x - p.x) < 40 && Math.abs((b.y - 30) - (p.y - 50)) < 70) {
-        p.jet = true; b.respawn = BOOST_RESPAWN; b.img.setVisible(false); b.core?.setVisible(false);
+        p.jet = true; b.respawn = BOOST_RESPAWN; b.img.setVisible(false);
         this.addScore(50, b.x, b.y - 60, '+50  JET', '#35e9ff', 14);
         SFX.jet(); this.shake(.25);
         this.fx.puff(b.x, b.y - 30, 26, '#35e9ff', 300); this.fx.puff(b.x, b.y - 30, 10, '#ffffff', 180);
