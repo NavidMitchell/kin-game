@@ -179,3 +179,17 @@ export function deckTexture(scene, w, palette, mover = false) {
   put(scene, key, cv);
   return key;
 }
+
+// Keep the armored caps intact and size one inset shaft section to the pillar.
+export function pillarTexture(scene, w, h) {
+  const key = `pillar-${w}-${h}`;
+  if (scene.textures.exists(key)) return key;
+  const img = source(scene, 'pillar-src');
+  const cap = Math.min(Math.round(w * 200 / img.width), Math.floor(h / 4));
+  const [cv, ctx] = makeCanvas(w, h);
+  ctx.drawImage(resample(img, [0, 0, img.width, 200], w, cap), 0, 0);
+  ctx.drawImage(resample(img, [0, 200, img.width, 720], w, h - cap * 2), 0, cap);
+  ctx.drawImage(resample(img, [0, img.height - 200, img.width, 200], w, cap), 0, h - cap);
+  put(scene, key, cv);
+  return key;
+}

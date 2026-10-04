@@ -11,6 +11,7 @@ import shootUrl from '../../assets/robot_shoot.webp';
 import droneUrl from '../../assets/drone.webp';
 import cityUrl from '../../assets/city.webp';
 import pipeModulesUrl from '../../assets/towers/pipe-modules.webp';
+import pillarUrl from '../../assets/world/pillar.webp';
 import coolingUrl from '../../assets/towers/cooling.webp';
 import titleUrl from '../../assets/title.jpg';
 import logoSvg from '../../assets/kinotic-logo.svg?raw';
@@ -36,6 +37,7 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('city', cityUrl);
     // Neutral cooling machinery picks up each level's accent colour.
     this.load.image('cooling-tower', coolingUrl);
+    this.load.image('pillar-src', pillarUrl);
     this.load.image('pipe-modules', pipeModulesUrl);
     // exit gates (gate-cyan ... gate-red-blue); each level picks one with its `gate` map property
     for (const [path, url] of Object.entries(GATE_URLS)) this.load.image('gate-' + path.match(/exit-gate-([\w-]+)\.webp$/)[1], url);

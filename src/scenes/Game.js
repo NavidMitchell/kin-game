@@ -8,7 +8,7 @@ import { Player } from '../entities/Player.js';
 import { Enemy } from '../entities/Enemy.js';
 import { Fx } from '../gfx/fx.js';
 import { pitShaft, wallTrim, setAnchoredFrame } from '../gfx/textures.js';
-import { thrusterPorts, deckTexture, edgeMetrics, propOrigin, FLOAT_H, PLAT_PAD_X, PLAT_PAD_TOP, EGG_CORE_Y, GATE_H, EDGE_LIGHT } from '../gfx/art.js';
+import { pillarTexture, thrusterPorts, deckTexture, edgeMetrics, propOrigin, FLOAT_H, PLAT_PAD_X, PLAT_PAD_TOP, EGG_CORE_Y, GATE_H, EDGE_LIGHT } from '../gfx/art.js';
 import { hexNum } from '../gfx/draw.js';
 import { SFX, sfxTick, thruster } from '../audio/sfx.js';
 import { musicMode, musicSetLevel } from '../audio/music.js';
@@ -123,6 +123,12 @@ export class GameScene extends Phaser.Scene {
       const z = this.add.zone(s.x + s.w / 2, s.y + s.h / 2, s.w, s.h);
       z.plat = { solid: s };
       this.solidGroup.add(z);
+      // Narrow solid cover blocks use finished pillar art instead of ground trim.
+      if (s.w <= 80 && s.h >= s.w * 1.5) {
+        this.add.image(s.x, s.y, pillarTexture(this, s.w, s.h))
+          .setOrigin(0).setDepth(DEPTH.plat).setTint(hexNum(c));
+        continue;
+      }
       // cooling facade: whole machinery rows only, starting on a ledge under the roof edge and ending on one,
       // with a plain base below. Blocks too short for a storey, or levels without a wall, keep the plain ground look.
       const storeys = !wallKey ? 0 : Math.floor((s.h - ROOF_H - TOWER.ledge * WALL_SCALE - 8) / (TOWER.storey * WALL_SCALE));
