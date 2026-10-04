@@ -59,6 +59,11 @@
    "value": "red-blue"
   },
   {
+   "name": "wall",
+   "type": "string",
+   "value": "red"
+  },
+  {
    "name": "palette",
    "type": "string",
    "value": "red"
