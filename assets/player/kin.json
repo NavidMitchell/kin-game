@@ -1,0 +1,228 @@
+{
+  "image": "kin.webp",
+  "width": 3072,
+  "height": 3744,
+  "frameWidth": 384,
+  "frameHeight": 288,
+  "columns": 8,
+  "rows": 13,
+  "frameCount": 104,
+  "margin": 0,
+  "spacing": 0,
+  "anchorPixels": [
+    160,
+    256
+  ],
+  "origin": [
+    0.4166666666666667,
+    0.8888888888888888
+  ],
+  "faces": "right; mirror the parent container around the shared anchor for left, as Player.render already does",
+  "worldScale": 0.5,
+  "rowsLayout": [
+    {
+      "row": 0,
+      "state": "idle",
+      "frameCount": 4,
+      "start": 0,
+      "end": 3
+    },
+    {
+      "row": 1,
+      "state": "run",
+      "frameCount": 6,
+      "start": 8,
+      "end": 13
+    },
+    {
+      "row": 2,
+      "state": "jump",
+      "frameCount": 6,
+      "start": 16,
+      "end": 21
+    },
+    {
+      "row": 3,
+      "state": "duck_land",
+      "frameCount": 4,
+      "start": 24,
+      "end": 27
+    },
+    {
+      "row": 4,
+      "state": "charge",
+      "frameCount": 7,
+      "start": 32,
+      "end": 38
+    },
+    {
+      "row": 5,
+      "state": "fire",
+      "frameCount": 4,
+      "start": 40,
+      "end": 43
+    },
+    {
+      "row": 6,
+      "state": "jet_idle",
+      "frameCount": 4,
+      "start": 48,
+      "end": 51
+    },
+    {
+      "row": 7,
+      "state": "jet_run",
+      "frameCount": 6,
+      "start": 56,
+      "end": 61
+    },
+    {
+      "row": 8,
+      "state": "jet_jump",
+      "frameCount": 6,
+      "start": 64,
+      "end": 69
+    },
+    {
+      "row": 9,
+      "state": "jet_duck_land",
+      "frameCount": 4,
+      "start": 72,
+      "end": 75
+    },
+    {
+      "row": 10,
+      "state": "jet_charge",
+      "frameCount": 7,
+      "start": 80,
+      "end": 86
+    },
+    {
+      "row": 11,
+      "state": "jet_fire",
+      "frameCount": 4,
+      "start": 88,
+      "end": 91
+    },
+    {
+      "row": 12,
+      "state": "jet_thrust",
+      "frameCount": 6,
+      "start": 96,
+      "end": 101
+    }
+  ],
+  "animations": {
+    "idle": {
+      "start": 0,
+      "end": 3,
+      "frameRate": 5,
+      "repeat": -1
+    },
+    "run": {
+      "start": 8,
+      "end": 13,
+      "frameRate": 12,
+      "repeat": -1
+    },
+    "jump": {
+      "start": 16,
+      "end": 21,
+      "frameRate": 20,
+      "repeat": 0
+    },
+    "duck": {
+      "start": 24,
+      "end": 24,
+      "frameRate": 1,
+      "repeat": 0
+    },
+    "land": {
+      "start": 25,
+      "end": 27,
+      "frameRate": 20,
+      "repeat": 0
+    },
+    "charge": {
+      "start": 32,
+      "end": 38,
+      "frameRate": 20,
+      "repeat": 0
+    },
+    "fire": {
+      "start": 40,
+      "end": 43,
+      "frameRate": 20,
+      "repeat": 0
+    },
+    "jet_idle": {
+      "start": 48,
+      "end": 51,
+      "frameRate": 5,
+      "repeat": -1
+    },
+    "jet_run": {
+      "start": 56,
+      "end": 61,
+      "frameRate": 12,
+      "repeat": -1
+    },
+    "jet_jump": {
+      "start": 64,
+      "end": 69,
+      "frameRate": 20,
+      "repeat": 0
+    },
+    "jet_duck": {
+      "start": 72,
+      "end": 72,
+      "frameRate": 1,
+      "repeat": 0
+    },
+    "jet_land": {
+      "start": 73,
+      "end": 75,
+      "frameRate": 20,
+      "repeat": 0
+    },
+    "jet_charge": {
+      "start": 80,
+      "end": 86,
+      "frameRate": 20,
+      "repeat": 0
+    },
+    "jet_fire": {
+      "start": 88,
+      "end": 91,
+      "frameRate": 20,
+      "repeat": 0
+    },
+    "jet_thrust": {
+      "start": 96,
+      "end": 101,
+      "frameRate": 12,
+      "repeat": -1
+    }
+  },
+  "airPoses": {
+    "normal": {
+      "crouch": 16,
+      "riseFast": 17,
+      "riseSlow": 18,
+      "apex": 19,
+      "fallSlow": 20,
+      "fallFast": 21
+    },
+    "jet": {
+      "crouch": 64,
+      "riseFast": 65,
+      "riseSlow": 66,
+      "apex": 67,
+      "fallSlow": 68,
+      "fallFast": 69
+    }
+  },
+  "unusedCells": "repeat last valid frame; use listed animation ranges",
+  "jetpack": "included in all jet_ frames; do not overlay separate pack",
+  "thrust": "flame included in jet_thrust; do not overlay flame image; procedural particles may continue"
+}
