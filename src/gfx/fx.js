@@ -6,6 +6,21 @@ export class Fx {
   constructor(scene) {
     this.scene = scene;
     this.bursts = new Map();
+    // One shared emitter for visible chips; short-lived motes trace the plasma orbit.
+    this.chipMotes = scene.add.particles(0, 0, 'glow', {
+      emitting: false, lifespan: { min: 300, max: 450 },
+      speed: { min: 4, max: 12 }, angle: { min: 0, max: 360 },
+      scale: { start: .14, end: 0 }, alpha: { start: .85, end: 0 },
+      tint: [0x35e9ff, 0x9cf8ff, 0xe9fdff], blendMode: 'ADD',
+      maxParticles: 160,
+    }).setDepth(DEPTH.pickup + .1);
+  }
+
+  chipPlasma(x, y, phase) {
+    for (const offset of [0, Math.PI]) {
+      const a = phase * 4 + offset, radius = 18 + Math.sin(phase * 7 + offset) * 2;
+      this.chipMotes.emitParticleAt(x + Math.cos(a) * radius, y + Math.sin(a) * radius * .8, 1);
+    }
   }
 
   // Square debris burst, like the original puff(): random directions, slight upward kick, gravity.

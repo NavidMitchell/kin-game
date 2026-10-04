@@ -269,7 +269,7 @@ export class GameScene extends Phaser.Scene {
 
     // enemies and pickups
     this.enemies = L.enemies.map(e => new Enemy(this, e));
-    this.chips = L.chips.map(ch => ({ ...ch, t: Math.random() * 6, img: this.add.image(ch.x, ch.y, 'chip', 0).setOrigin(...chipMap.origin).setScale(CHIP_SCALE).setDepth(DEPTH.pickup) }));
+    this.chips = L.chips.map(ch => ({ ...ch, t: Math.random() * 6, plasmaT: Math.random() * .1, img: this.add.image(ch.x, ch.y, 'chip', 0).setOrigin(...chipMap.origin).setScale(CHIP_SCALE).setDepth(DEPTH.pickup) }));
     this.boosts = L.boosts.map(b => {
       // the egg's core goes in first so the shell frames it; it glows in the shell's opening
       const core = b.type === 'egg' ? this.add.image(b.x, b.y + EGG_CORE_Y, 'egg-core').setOrigin(...propOrigin('egg-core')).setDepth(DEPTH.pickup) : null;
@@ -487,6 +487,14 @@ export class GameScene extends Phaser.Scene {
         c.got = true; c.img.destroy(); this.stats.chips++;
         this.addScore(10, c.x, c.y - 10, '+10', '#35e9ff', 12);
         SFX.chip(); this.fx.puff(c.x, c.y, 8, '#35e9ff', 160);
+      }
+      // Emit only near the camera, and stop immediately when the chip is collected.
+      const view = this.cameras.main.worldView;
+      c.plasmaT -= dt;
+      if (!c.got && c.plasmaT <= 0 && c.x >= view.x - 30 && c.x <= view.right + 30
+        && c.img.y >= view.y - 30 && c.img.y <= view.bottom + 30) {
+        this.fx.chipPlasma(c.x, c.img.y, c.t);
+        c.plasmaT = .1;
       }
     }
     this.chips = this.chips.filter(c => !c.got);
