@@ -307,7 +307,7 @@
       {
        "name": "text",
        "type": "string",
-       "value": "V / B / N  SHOOT      or jump on enemies to stomp them"
+       "value": "SHIFT or V / B / N  SHOOT      or jump on enemies to stomp them"
       }
      ]
     },

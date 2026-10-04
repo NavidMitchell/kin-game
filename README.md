@@ -18,7 +18,7 @@ Or run `npm install` and then `npm run dev`.
 | Move | ← → or A D |
 | Jump (hold for height) | Space, W, or ↑ |
 | Duck | ↓ or S |
-| Shoot | V, B, or N |
+| Shoot | Left Shift, V, B, or N |
 | Pause | Esc or P |
 | Menus | ← → to choose, Space or Enter to select |
 | Toggle music | M |
