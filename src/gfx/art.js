@@ -84,6 +84,16 @@ const source = (scene, key) => scene.textures.get(key).getSourceImage();
 const PIECE_RES = 2 * DECK.scale;
 
 export function fitArt(scene) {
+  // Prefilter fine grilles and pipe highlights once instead of shrinking them
+  // in the GPU every frame as the camera crosses fractional pixel positions.
+  const cooling = source(scene, 'cooling-tower');
+  put(scene, 'cooling-tower', resample(cooling, [0, 0, cooling.width, cooling.height], 627, 627));
+  const pipes = source(scene, 'pipe-modules');
+  for (let i = 0; i < 4; i++) {
+    put(scene, `pipe-${i}`, resample(pipes, [i * 384, 12, 384, 998], 92, 240));
+  }
+  put(scene, 'pipe-fill', resample(pipes, [0, 30, 384, 300], 92, 72));
+  scene.textures.remove('pipe-modules');
   for (const [key, p] of Object.entries(PROPS)) {
     put(scene, key, resample(source(scene, key), p.crop, Math.round(p.crop[2] * p.scale), Math.round(p.crop[3] * p.scale)));
   }

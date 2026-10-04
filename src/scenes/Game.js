@@ -131,12 +131,12 @@ export class GameScene extends Phaser.Scene {
         this.add.rectangle(s.x, s.y, s.w, s.h, 0x0b0a10).setOrigin(0).setDepth(DEPTH.plat);
         // x stays world-aligned so neighbouring blocks line up; y starts the texture at a ledge
         this.add.tileSprite(s.x, fy, s.w, fh, wallKey).setOrigin(0).setDepth(DEPTH.plat)
-          .setTileScale(WALL_SCALE, WALL_SCALE).setTilePosition(s.x / WALL_SCALE, TOWER.firstLedge).setTint(hexNum(c));
+          .setTilePosition(s.x, TOWER.firstLedge * WALL_SCALE).setTint(hexNum(c));
         if (fy + fh < s.y + s.h - 1) this.add.rectangle(s.x, fy + fh, s.w, 2, hexNum(c), .35).setOrigin(0).setDepth(DEPTH.plat);
         // Pipes are independent of the wall repeat: mostly straight runs, with
         // occasional fittings. Every module returns to the same centreline.
         const pipeXs = [], centres = [190.5, 175, 199, 161.5];
-        const runs = Math.max(1, Math.floor(s.w / 260)), scale = .24, segmentH = 998 * scale;
+        const runs = Math.max(1, Math.floor(s.w / 260)), segmentH = 240;
         for (let run = 0; run < runs; run++) {
           const px = s.x + s.w * (run + .4) / runs;
           pipeXs.push(px);
@@ -144,13 +144,13 @@ export class GameScene extends Phaser.Scene {
           while (py + segmentH <= fy + fh) {
             const seed = Math.abs(Math.floor(s.x * 13 + s.y * 7 + run * 31 + index * 17));
             const frame = seed % 5 < 3 ? 0 : 1 + seed % 3;
-            this.add.image(px, py, 'pipe-modules', frame).setOrigin(centres[frame] / 384, 0)
-              .setScale(scale).setDepth(DEPTH.plat + .1);
+            this.add.image(px, py, `pipe-${frame}`).setOrigin(centres[frame] / 384, 0)
+              .setDepth(DEPTH.plat + .1);
             py += segmentH; index++;
           }
           // Only a plain straight section is shortened to fit the remaining height.
-          if (py < fy + fh) this.add.image(px, py, 'pipe-modules', 'straight-fill')
-            .setOrigin(centres[0] / 384, 0).setDisplaySize(384 * scale, fy + fh - py).setDepth(DEPTH.plat + .1);
+          if (py < fy + fh) this.add.tileSprite(px, py, 92, fy + fh - py, 'pipe-fill')
+            .setOrigin(centres[0] / 384, 0).setDepth(DEPTH.plat + .1);
         }
         // Vent outlets follow the world-aligned panel grid, never clipped block edges.
         const panel = TOWER.storey * WALL_SCALE;

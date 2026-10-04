@@ -60,10 +60,6 @@ export class PreloadScene extends Phaser.Scene {
         new Promise(r => setTimeout(r, 2500)),
       ]);
     } catch { /* font unavailable */ }
-    // Common centreline and diameter at both ends of every pipe module.
-    const pipes = this.textures.get('pipe-modules');
-    for (let i = 0; i < 4; i++) pipes.add(i, 0, i * 384, 12, 384, 998);
-    pipes.add('straight-fill', 0, 0, 30, 384, 300);
     fitArt(this);
     bakeSprites(this);
     bakeProps(this);
