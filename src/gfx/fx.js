@@ -6,6 +6,14 @@ export class Fx {
   constructor(scene) {
     this.scene = scene;
     this.bursts = new Map();
+    this.ventSources = [];
+    this.ventSteam = scene.add.particles(0, 0, 'puff', {
+      emitting: false, lifespan: { min: 1000, max: 1700 },
+      speedX: { min: -9, max: 9 }, speedY: { min: -38, max: -22 },
+      scale: { start: .12, end: .6 }, tint: 0xb9d0d6,
+      alpha: { onEmit: () => 0, onUpdate: (p, k, t) => Math.sin(t * Math.PI) * .18 },
+      maxParticles: 100,
+    }).setDepth(DEPTH.plat + .5);
     // One shared emitter for visible chips; short-lived motes trace the plasma orbit.
     this.chipMotes = scene.add.particles(0, 0, 'glow', {
       emitting: false, lifespan: { min: 300, max: 450 },
@@ -14,6 +22,21 @@ export class Fx {
       tint: [0x35e9ff, 0x9cf8ff, 0xe9fdff], blendMode: 'ADD',
       maxParticles: 160,
     }).setDepth(DEPTH.pickup + .1);
+  }
+
+  addCoolingVent(x, y) {
+    this.ventSources.push({ x, y, timer: Math.random() * 2 });
+  }
+
+  updateCoolingVents(dt, view) {
+    for (const vent of this.ventSources) {
+      vent.timer -= dt;
+      if (vent.timer > 0) continue;
+      vent.timer = 1.4 + Math.random() * 2;
+      if (vent.x < view.x - 40 || vent.x > view.right + 40
+        || vent.y < view.y - 20 || vent.y > view.bottom + 80) continue;
+      this.ventSteam.emitParticleAt(vent.x, vent.y, 4);
+    }
   }
 
   chipPlasma(x, y, phase) {

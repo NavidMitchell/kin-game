@@ -133,6 +133,16 @@ export class GameScene extends Phaser.Scene {
         this.add.tileSprite(s.x, fy, s.w, fh, wallKey).setOrigin(0).setDepth(DEPTH.plat)
           .setTileScale(WALL_SCALE, WALL_SCALE).setTilePosition(s.x / WALL_SCALE, TOWER.firstLedge).setTint(hexNum(c));
         if (fy + fh < s.y + s.h - 1) this.add.rectangle(s.x, fy + fh, s.w, 2, hexNum(c), .35).setOrigin(0).setDepth(DEPTH.plat);
+        // Vent outlets follow the world-aligned panel grid, never clipped block edges.
+        const panel = TOWER.storey * WALL_SCALE;
+        for (let row = 0; row < storeys; row++) {
+          for (let col = Math.floor(s.x / panel); col * panel < s.x + s.w; col++) {
+            const vx = (col + .55) * panel;
+            if (vx > s.x + 20 && vx < s.x + s.w - 20) {
+              this.fx.addCoolingVent(vx, fy + (row + .3) * panel);
+            }
+          }
+        }
         edge(s, 'roof');   // thin strip over the roof edge and first machinery row
       } else {
         this.add.rectangle(s.x, s.y, s.w, s.h, 0x0b0a10).setOrigin(0).setDepth(DEPTH.plat);
@@ -416,6 +426,7 @@ export class GameScene extends Phaser.Scene {
     this.enemies = this.enemies.filter(e => !e.gone);
     this.updateLasers(dt, cam);
     this.updatePickups(dt);
+    this.fx.updateCoolingVents(dt, this.cameras.main.worldView);
     if (this.mode !== 'play') return;
 
     // checkpoints
