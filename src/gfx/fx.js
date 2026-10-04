@@ -14,14 +14,15 @@ export class Fx {
       alpha: { onEmit: () => 0, onUpdate: (p, k, t) => Math.sin(t * Math.PI) * .18 },
       maxParticles: 100,
     }).setDepth(DEPTH.plat + .5);
-    // One shared emitter for visible chips; short-lived motes trace the plasma orbit.
-    this.chipMotes = scene.add.particles(0, 0, 'glow', {
-      emitting: false, lifespan: { min: 300, max: 450 },
-      speed: { min: 4, max: 12 }, angle: { min: 0, max: 360 },
-      scale: { start: .14, end: 0 }, alpha: { start: .85, end: 0 },
-      tint: [0x35e9ff, 0x9cf8ff, 0xe9fdff], blendMode: 'ADD',
-      maxParticles: 160,
-    }).setDepth(DEPTH.pickup + .1);
+    // Overlapping soft wisps swell and fade into a luminous cloud behind each chip.
+    this.chipCloud = scene.add.particles(0, 0, 'puff', {
+      emitting: false, lifespan: { min: 900, max: 1400 },
+      speedX: { min: -3, max: 3 }, speedY: { min: -5, max: 2 },
+      scale: { start: .3, end: .75 },
+      alpha: { onEmit: () => 0, onUpdate: (p, k, t) => Math.sin(t * Math.PI) * .24 },
+      tint: [0x35e9ff, 0x72eaff, 0xaff6ff], blendMode: 'ADD',
+      maxParticles: 300,
+    }).setDepth(DEPTH.pickup - .1);
   }
 
   addCoolingVent(x, y) {
@@ -39,10 +40,10 @@ export class Fx {
     }
   }
 
-  chipPlasma(x, y, phase) {
-    for (const offset of [0, Math.PI]) {
-      const a = phase * 4 + offset, radius = 18 + Math.sin(phase * 7 + offset) * 2;
-      this.chipMotes.emitParticleAt(x + Math.cos(a) * radius, y + Math.sin(a) * radius * .8, 1);
+  chipPlasma(x, y) {
+    // Small random offsets fill the centre instead of tracing a ring or orbit.
+    for (let i = 0; i < 2; i++) {
+      this.chipCloud.emitParticleAt(x + (Math.random() - .5) * 14, y + (Math.random() - .5) * 12, 1);
     }
   }
 

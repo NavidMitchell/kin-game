@@ -511,7 +511,7 @@ export class GameScene extends Phaser.Scene {
     for (const c of this.chips) {
       c.t += dt;
       c.img.setPosition(c.x, c.y + Math.sin(c.t * 3) * 4)
-        .setScale(CHIP_SCALE * (Math.abs(Math.cos(c.t * 2.2)) * .9 + .1), CHIP_SCALE)
+        .setScale(CHIP_SCALE)
         .setFrame(chipMap.animations.idle.start + Math.floor(c.t * chipMap.animations.idle.frameRate) % chipMap.frameCount);
       if (playing && Math.hypot(c.x - p.x, c.y - (p.y - 50)) < 11 + 34) {
         c.got = true; c.img.destroy(); this.stats.chips++;
@@ -523,7 +523,7 @@ export class GameScene extends Phaser.Scene {
       c.plasmaT -= dt;
       if (!c.got && c.plasmaT <= 0 && c.x >= view.x - 30 && c.x <= view.right + 30
         && c.img.y >= view.y - 30 && c.img.y <= view.bottom + 30) {
-        this.fx.chipPlasma(c.x, c.img.y, c.t);
+        this.fx.chipPlasma(c.x, c.img.y);
         c.plasmaT = .1;
       }
     }
