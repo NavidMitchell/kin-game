@@ -20,7 +20,7 @@ export class Player {
     this.body = this.zone.body;
     this.body.setCollideWorldBounds(true).setMaxVelocity(2000, MAX_FALL);
 
-    this.shadow = scene.add.ellipse(x, y + 2, 56, 12, 0x000000, .45).setDepth(DEPTH.player);
+    this.shadow = scene.add.ellipse(x, y + 2, 56, 12, 0x000000, .45).setDepth(DEPTH.player).setVisible(false);
     this.view = scene.add.container(x, y).setDepth(DEPTH.player);
     this.sprite = scene.add.sprite(0, 0, 'kin', kinMap.animations.idle.frames[0])
       .setOrigin(...kinMap.origin).setScale(kinMap.worldScale);
@@ -138,7 +138,7 @@ export class Player {
     this.shadow.setPosition(x, y + 2);
     this.sprite.setFrame(this.frameIndex());
     this.view.setVisible(!this.hidden && !(this.inv > 0 && Math.floor(this.inv * 14) % 2 === 0));   // blink while invulnerable
-    this.shadow.setVisible(!this.hidden);
+    this.shadow.setVisible(!this.hidden && this.ground);
     this.exhaust.emitting = this.thrust;
     if (this.thrust) this.exhaust.setPosition(x - this.face * 14, y - 8);
   }
