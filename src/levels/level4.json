@@ -1,0 +1,992 @@
+{
+ "compressionlevel": -1,
+ "type": "map",
+ "version": "1.10",
+ "tiledversion": "1.11.0",
+ "orientation": "orthogonal",
+ "renderorder": "right-down",
+ "infinite": false,
+ "width": 245,
+ "height": 15,
+ "tilewidth": 36,
+ "tileheight": 36,
+ "nextlayerid": 3,
+ "nextobjectid": 57,
+ "properties": [
+  {
+   "name": "name",
+   "type": "string",
+   "value": "Drone Foundry"
+  },
+  {
+   "name": "subtitle",
+   "type": "string",
+   "value": "Where drones are built. Pillars block lasers."
+  },
+  {
+   "name": "color",
+   "type": "color",
+   "value": "#ff3dff9e"
+  },
+  {
+   "name": "bgTint",
+   "type": "color",
+   "value": "#ffffffff"
+  },
+  {
+   "name": "bgHue",
+   "type": "int",
+   "value": 125
+  },
+  {
+   "name": "bpm",
+   "type": "int",
+   "value": 152
+  },
+  {
+   "name": "transpose",
+   "type": "int",
+   "value": 3
+  },
+  {
+   "name": "par",
+   "type": "int",
+   "value": 135
+  }
+ ],
+ "layers": [
+  {
+   "id": 1,
+   "name": "Platforms",
+   "type": "objectgroup",
+   "draworder": "topdown",
+   "opacity": 1,
+   "visible": true,
+   "x": 0,
+   "y": 0,
+   "objects": [
+    {
+     "id": 1,
+     "name": "",
+     "type": "ground",
+     "x": 0,
+     "y": 468,
+     "width": 1400,
+     "height": 72,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 4,
+     "name": "",
+     "type": "ground",
+     "x": 700,
+     "y": 350,
+     "width": 50,
+     "height": 118,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 7,
+     "name": "",
+     "type": "ground",
+     "x": 1120,
+     "y": 350,
+     "width": 50,
+     "height": 118,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 9,
+     "name": "",
+     "type": "mover",
+     "x": 1450,
+     "y": 400,
+     "width": 140,
+     "height": 26,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "dx",
+       "type": "int",
+       "value": 300
+      },
+      {
+       "name": "period",
+       "type": "int",
+       "value": 4
+      }
+     ]
+    },
+    {
+     "id": 11,
+     "name": "",
+     "type": "ground",
+     "x": 1900,
+     "y": 468,
+     "width": 1500,
+     "height": 72,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 14,
+     "name": "",
+     "type": "ground",
+     "x": 2520,
+     "y": 360,
+     "width": 50,
+     "height": 108,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 17,
+     "name": "",
+     "type": "ground",
+     "x": 3000,
+     "y": 360,
+     "width": 50,
+     "height": 108,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 20,
+     "name": "",
+     "type": "ground",
+     "x": 3400,
+     "y": 468,
+     "width": 1000,
+     "height": 72,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 21,
+     "name": "",
+     "type": "float",
+     "x": 3500,
+     "y": 360,
+     "width": 150,
+     "height": 26,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 24,
+     "name": "",
+     "type": "float",
+     "x": 3760,
+     "y": 260,
+     "width": 150,
+     "height": 26,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 26,
+     "name": "",
+     "type": "float",
+     "x": 4010,
+     "y": 360,
+     "width": 150,
+     "height": 26,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 28,
+     "name": "",
+     "type": "float",
+     "x": 4250,
+     "y": 260,
+     "width": 130,
+     "height": 26,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 31,
+     "name": "",
+     "type": "mover",
+     "x": 4480,
+     "y": 440,
+     "width": 120,
+     "height": 26,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "dy",
+       "type": "int",
+       "value": -140
+      },
+      {
+       "name": "period",
+       "type": "int",
+       "value": 3
+      }
+     ]
+    },
+    {
+     "id": 32,
+     "name": "",
+     "type": "mover",
+     "x": 4740,
+     "y": 300,
+     "width": 120,
+     "height": 26,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "dy",
+       "type": "int",
+       "value": 140
+      },
+      {
+       "name": "period",
+       "type": "int",
+       "value": 3
+      }
+     ]
+    },
+    {
+     "id": 33,
+     "name": "",
+     "type": "mover",
+     "x": 5000,
+     "y": 440,
+     "width": 120,
+     "height": 26,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "dy",
+       "type": "int",
+       "value": -140
+      },
+      {
+       "name": "period",
+       "type": "int",
+       "value": 3
+      }
+     ]
+    },
+    {
+     "id": 36,
+     "name": "",
+     "type": "ground",
+     "x": 5200,
+     "y": 468,
+     "width": 1400,
+     "height": 72,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 40,
+     "name": "",
+     "type": "ground",
+     "x": 5820,
+     "y": 350,
+     "width": 50,
+     "height": 118,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 42,
+     "name": "",
+     "type": "ground",
+     "x": 6120,
+     "y": 350,
+     "width": 50,
+     "height": 118,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 46,
+     "name": "",
+     "type": "float",
+     "x": 6700,
+     "y": 400,
+     "width": 120,
+     "height": 26,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 48,
+     "name": "",
+     "type": "mover",
+     "x": 6900,
+     "y": 360,
+     "width": 140,
+     "height": 26,
+     "rotation": 0,
+     "visible": true,
+     "properties": [
+      {
+       "name": "dx",
+       "type": "int",
+       "value": 240
+      },
+      {
+       "name": "period",
+       "type": "float",
+       "value": 3.6
+      }
+     ]
+    },
+    {
+     "id": 50,
+     "name": "",
+     "type": "float",
+     "x": 7330,
+     "y": 330,
+     "width": 120,
+     "height": 26,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 52,
+     "name": "",
+     "type": "ground",
+     "x": 7520,
+     "y": 468,
+     "width": 1300,
+     "height": 72,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 54,
+     "name": "",
+     "type": "ground",
+     "x": 7980,
+     "y": 350,
+     "width": 50,
+     "height": 118,
+     "rotation": 0,
+     "visible": true
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "name": "Entities",
+   "type": "objectgroup",
+   "draworder": "topdown",
+   "opacity": 1,
+   "visible": true,
+   "x": 0,
+   "y": 0,
+   "objects": [
+    {
+     "id": 2,
+     "name": "",
+     "type": "start",
+     "x": 150,
+     "y": 468,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true
+    },
+    {
+     "id": 3,
+     "name": "",
+     "type": "hint",
+     "x": 420,
+     "y": 300,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "text",
+       "type": "string",
+       "value": "PILLARS BLOCK LASERS"
+      }
+     ]
+    },
+    {
+     "id": 5,
+     "name": "",
+     "type": "chips",
+     "x": 700,
+     "y": 300,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "count",
+       "type": "int",
+       "value": 2
+      }
+     ]
+    },
+    {
+     "id": 6,
+     "name": "",
+     "type": "drone",
+     "x": 980,
+     "y": 468,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "range",
+       "type": "int",
+       "value": 90
+      }
+     ]
+    },
+    {
+     "id": 8,
+     "name": "",
+     "type": "drone",
+     "x": 1280,
+     "y": 468,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "range",
+       "type": "int",
+       "value": 70
+      }
+     ]
+    },
+    {
+     "id": 10,
+     "name": "",
+     "type": "chips",
+     "x": 1500,
+     "y": 340,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "count",
+       "type": "int",
+       "value": 5
+      },
+      {
+       "name": "arc",
+       "type": "bool",
+       "value": false
+      },
+      {
+       "name": "spacing",
+       "type": "int",
+       "value": 60
+      }
+     ]
+    },
+    {
+     "id": 12,
+     "name": "",
+     "type": "checkpoint",
+     "x": 2000,
+     "y": 468,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true
+    },
+    {
+     "id": 13,
+     "name": "",
+     "type": "skimmer",
+     "x": 2300,
+     "y": 468,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "range",
+       "type": "int",
+       "value": 140
+      }
+     ]
+    },
+    {
+     "id": 15,
+     "name": "",
+     "type": "chips",
+     "x": 2520,
+     "y": 310,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "count",
+       "type": "int",
+       "value": 2
+      }
+     ]
+    },
+    {
+     "id": 16,
+     "name": "",
+     "type": "skimmer",
+     "x": 2780,
+     "y": 468,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "range",
+       "type": "int",
+       "value": 160
+      }
+     ]
+    },
+    {
+     "id": 18,
+     "name": "",
+     "type": "chips",
+     "x": 3000,
+     "y": 310,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "count",
+       "type": "int",
+       "value": 2
+      }
+     ]
+    },
+    {
+     "id": 19,
+     "name": "",
+     "type": "skimmer",
+     "x": 3250,
+     "y": 468,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "range",
+       "type": "int",
+       "value": 110
+      }
+     ]
+    },
+    {
+     "id": 22,
+     "name": "",
+     "type": "drone",
+     "x": 3575,
+     "y": 360,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "range",
+       "type": "int",
+       "value": 40
+      }
+     ]
+    },
+    {
+     "id": 23,
+     "name": "",
+     "type": "chips",
+     "x": 3520,
+     "y": 320,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "count",
+       "type": "int",
+       "value": 3
+      }
+     ]
+    },
+    {
+     "id": 25,
+     "name": "",
+     "type": "chips",
+     "x": 3780,
+     "y": 220,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "count",
+       "type": "int",
+       "value": 3
+      }
+     ]
+    },
+    {
+     "id": 27,
+     "name": "",
+     "type": "drone",
+     "x": 4085,
+     "y": 360,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "range",
+       "type": "int",
+       "value": 40
+      }
+     ]
+    },
+    {
+     "id": 29,
+     "name": "",
+     "type": "chips",
+     "x": 4265,
+     "y": 220,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "count",
+       "type": "int",
+       "value": 3
+      }
+     ]
+    },
+    {
+     "id": 30,
+     "name": "",
+     "type": "skimmer",
+     "x": 3900,
+     "y": 468,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "range",
+       "type": "int",
+       "value": 400
+      }
+     ]
+    },
+    {
+     "id": 34,
+     "name": "",
+     "type": "chips",
+     "x": 4500,
+     "y": 250,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "count",
+       "type": "int",
+       "value": 3
+      }
+     ]
+    },
+    {
+     "id": 35,
+     "name": "",
+     "type": "chips",
+     "x": 5020,
+     "y": 250,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "count",
+       "type": "int",
+       "value": 3
+      }
+     ]
+    },
+    {
+     "id": 37,
+     "name": "",
+     "type": "checkpoint",
+     "x": 5300,
+     "y": 468,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true
+    },
+    {
+     "id": 38,
+     "name": "",
+     "type": "repair",
+     "x": 5420,
+     "y": 468,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true
+    },
+    {
+     "id": 39,
+     "name": "",
+     "type": "drone",
+     "x": 5700,
+     "y": 468,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "range",
+       "type": "int",
+       "value": 60
+      }
+     ]
+    },
+    {
+     "id": 41,
+     "name": "",
+     "type": "drone",
+     "x": 6000,
+     "y": 468,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "range",
+       "type": "int",
+       "value": 60
+      }
+     ]
+    },
+    {
+     "id": 43,
+     "name": "",
+     "type": "drone",
+     "x": 6300,
+     "y": 468,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "range",
+       "type": "int",
+       "value": 60
+      }
+     ]
+    },
+    {
+     "id": 44,
+     "name": "",
+     "type": "skimmer",
+     "x": 6450,
+     "y": 468,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "range",
+       "type": "int",
+       "value": 100
+      }
+     ]
+    },
+    {
+     "id": 45,
+     "name": "",
+     "type": "egg",
+     "x": 6540,
+     "y": 468,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true
+    },
+    {
+     "id": 47,
+     "name": "",
+     "type": "chips",
+     "x": 6715,
+     "y": 360,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "count",
+       "type": "int",
+       "value": 2
+      }
+     ]
+    },
+    {
+     "id": 49,
+     "name": "",
+     "type": "drone",
+     "x": 7050,
+     "y": 360,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "range",
+       "type": "int",
+       "value": 150
+      }
+     ]
+    },
+    {
+     "id": 51,
+     "name": "",
+     "type": "chips",
+     "x": 7345,
+     "y": 290,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "count",
+       "type": "int",
+       "value": 2
+      }
+     ]
+    },
+    {
+     "id": 53,
+     "name": "",
+     "type": "skimmer",
+     "x": 7800,
+     "y": 468,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "range",
+       "type": "int",
+       "value": 120
+      }
+     ]
+    },
+    {
+     "id": 55,
+     "name": "",
+     "type": "drone",
+     "x": 8150,
+     "y": 468,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "range",
+       "type": "int",
+       "value": 70
+      }
+     ]
+    },
+    {
+     "id": 56,
+     "name": "",
+     "type": "exit",
+     "x": 8560,
+     "y": 468,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true
+    }
+   ]
+  }
+ ],
+ "tilesets": []
+}

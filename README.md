@@ -1,17 +1,15 @@
 # Kin Runner
 
 A 2D side-scrolling platformer built from the Kin robot sprite sheet and the neon city backdrop.
-Pure HTML5 canvas and vanilla JavaScript, no build step and no dependencies.
+Built with [Phaser 4](https://phaser.io) (Arcade Physics) and Vite. It has five hand-built levels, each with a start and an exit gate.
 
 ## Play
 
-Run the bundled server:
-
 ```bash
-./serve.sh
+./serve.sh          # installs dependencies on first run, then serves http://localhost:8765
 ```
 
-Then open http://localhost:8765. Any other static file server works too.
+Or run `npm install` and then `npm run dev`.
 
 ## Controls
 
@@ -21,39 +19,79 @@ Then open http://localhost:8765. Any other static file server works too.
 | Jump (hold for height) | Space, W, or ↑ |
 | Duck | ↓ or S |
 | Shoot | V, B, or N |
-| Start | Space, Enter, or tap |
-| Retry | Space, Enter, or a shoot key |
+| Pause | Esc or P |
+| Menus | ← → to choose, Space or Enter to select |
 | Toggle music | M |
 | Fullscreen | F |
 
-On touch devices, on-screen buttons appear automatically.
+On touch devices, on-screen buttons appear automatically, including duck and pause.
 
-## Gameplay
+## Levels
 
-- Endless procedurally generated level: ground runs, pits, stepping platforms, and towers.
-- Two drone types: fast ground skimmers and high hover drones that fire lasers when you are level with them. Shoot or stomp either for 100 points. Your energy shots also knock enemy lasers out of the air. Duck under lasers.
+| # | Level | What's new |
+|---|---|---|
+| 1 | Neon District | Tutorial with in-world hints: running, jumping, ducking, shooting, stomping, checkpoints |
+| 2 | Rooftop Run | Rooftops at different heights, ledge hopping, a jet-only gap across the skyline |
+| 3 | The Spire | Vertical level: zig-zag climb, a lift up and a conveyor across, then a sky bridge |
+| 4 | Drone Foundry | Drone-heavy; pillars block lasers, timed lifts over a pit |
+| 5 | Core Breach | The final gauntlet, mixing everything above |
+
+- Clearing a level unlocks the next one. The level select screen shows each level's best score, saved in the browser.
+- Each level ends at an exit gate. The clear screen adds bonuses to your score: time under par (+10 per second), all chips collected (+500) and no damage taken (+500).
+- Three life cores per level. Falling into a pit costs one and respawns you on the last solid ground you stood on. Repair kits restore a core.
+- Checkpoint beacons: if you run out of lives, Retry resumes at the last checkpoint you reached, with the score you had there.
+- Two drone types: fast ground skimmers and hover drones that fire lasers when you are level with them. Shoot or stomp either for 100 points. Your shots also knock lasers out of the air. Duck under lasers, or hide behind pillars.
 - Cyan data chips are worth 10 points each.
-- Fuel tanks and egg pods grant a jet booster (+50). Hold jump in the air to fly. You keep it until an enemy hits you or you fall.
-- Three hit points. Falling into a pit costs one and respawns you on the last safe ground.
-- Best score is saved in the browser.
-- HUD: player portrait with three hex life cores, chip counter, distance panel with a bar to the next 500 m milestone (+250 bonus), rolling score counter with best and drone kills, jet status pill, floating score popups, and a red low-health vignette.
-- Synthesised sound effects for jumping (robot chirps), shooting, coins (pitch climbs on quick pickups), stomps, enemy approach warnings, laser charge, and explosions. All generated in code.
-- Original procedural soundtrack, "Neon Grid": a chiptune-synthwave loop with driving octave bass, echoing arpeggios, detuned pads, and a square-wave lead. Press M to mute.
+- Fuel tanks and egg pods give a jet booster (+50). Hold jump in the air to fly. You keep it until something hits you. Boosters respawn a few seconds after pickup, so a failed flight can always be retried.
+- Each level has its own colour palette, music key and tempo.
+- All sound effects and the "Neon Grid" soundtrack are synthesised in code with WebAudio.
 
-## Files
+## Editing levels
 
-- `index.html` – the whole game (engine, level generator, rendering, synth sound effects).
-- `assets/robot.webp` – player sprite sheet (idle 4, run 6, jump 6, attack 6 frames). Frame rectangles were auto-detected from the alpha channel and are inlined in `index.html`.
-- `assets/city.webp` – parallax background, tiled horizontally in two layers.
-- `assets/drone.webp` – enemy sprite sheet (hover 4, dash 6, laser 4, death 4 frames).
-- `assets/robot_shoot.webp` – player energy-shot sheet (charge 7, fire 4, projectile 3 frames).
-- `assets/title.jpg` – title screen poster.
-- `assets/kinotic-logo.svg` – Kinotic logo shown in the "Powered by" credit on the title screen.
+Levels are [Tiled](https://www.mapeditor.org) maps in `src/levels/level1.json` to `level5.json`. Open them in Tiled to edit. They use object layers only, no tilesets:
 
-## Standalone file
+- **Platforms** layer, rectangles with a class:
+  - `ground`: solid. You can stand on it and it blocks you from the sides.
+  - `float`: a one-way ledge you can jump up through.
+  - `mover`: a one-way ledge that travels. Properties: `dx`, `dy`, `period` (seconds), `phase` (0–1).
+- **Entities** layer, points; `y` is the surface the object stands on:
+  - `start`, `exit`, `checkpoint`
+  - `drone` and `skimmer`, with property `range`
+  - `chips`, with properties `count`, `spacing`, `arc`
+  - `tank`, `egg`, `repair`
+  - `hint`, with property `text`
+- **Map properties**: `name`, `subtitle`, `color`, `bgHue`, `bgTint`, `bpm`, `transpose`, `par`.
 
-`dist/kin-runner.html` is the whole game in one file with every asset embedded, so it can be opened directly from disk or emailed. Rebuild it after any change with:
+Gaps between pieces of `ground` that reach the bottom of the map become glowing pits automatically. After editing, run:
 
 ```bash
-python3 build-standalone.py
+npm run check-levels
 ```
+
+It simulates Kin's jumps, using the game's own physics numbers, between every surface. It reports whether the exit, the checkpoints and every chip can be reached from the start, and it fails if a level can't be finished.
+
+## Project layout
+
+```
+index.html              page shell + touch buttons
+src/main.js             Phaser game config
+src/config.js           physics constants, sprite-sheet frame rectangles
+src/controls.js         keyboard + touch input
+src/save.js             unlocked levels and best scores (localStorage)
+src/scenes/             Preload, Title, Select, Game, HUD, Result (clear / game over / pause)
+src/entities/           Player (Arcade body + visuals), Enemy (drones and skimmers)
+src/gfx/                texture baking (neon props, glowing sprite atlases), particles, canvas drawing helpers
+src/audio/              synthesised sound effects and music
+src/levels/             Tiled maps + parser
+tools/                  level checker, single-file build step
+assets/                 sprite sheets, background, title poster, logo
+```
+
+## Building
+
+```bash
+npm run build              # multi-file site in dist/web, ready for any static host
+npm run build:standalone   # dist/kin-runner.html: the whole game in one file, every asset embedded
+```
+
+`dist/kin-runner.html` can be opened straight from disk or emailed. Rebuild it after making changes.
