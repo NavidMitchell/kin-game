@@ -108,8 +108,8 @@ export class GameScene extends Phaser.Scene {
     this.moverGroup = this.physics.add.group({ allowGravity: false, immovable: true, frictionX: 1 });   // frictionX 1: riders move with the lift
     this.solids = L.solids; this.movers = [];
 
-    // no `wall` map property means no facade: every block gets the plain ground look
-    const wallKey = L.wall ? 'cooling-tower' : null;
+    // All solid ground faces share the cooling artwork, tinted by level.
+    const wallKey = 'cooling-tower';
     // industrial edge strip along the top of solid ground, its walking surface on the collider's top
     const edge = (s, kind) => {
       const key = `edge-${pal}-${kind}`, m = edgeMetrics(this, pal, kind), th = this.textures.get(key).getSourceImage().height;
@@ -129,11 +129,10 @@ export class GameScene extends Phaser.Scene {
           .setOrigin(0).setDepth(DEPTH.plat).setTint(hexNum(c));
         continue;
       }
-      // cooling facade: whole machinery rows only, starting on a ledge under the roof edge and ending on one,
-      // with a plain base below. Blocks too short for a storey, or levels without a wall, keep the plain ground look.
-      const storeys = !wallKey ? 0 : Math.floor((s.h - ROOF_H - TOWER.ledge * WALL_SCALE - 8) / (TOWER.storey * WALL_SCALE));
-      if (storeys >= 1) {
-        const fy = s.y + ROOF_H, fh = (storeys * TOWER.storey + TOWER.ledge) * WALL_SCALE;
+      // Fill the entire exposed face, including short ground blocks and partial rows.
+      const fh = Math.max(0, s.h - ROOF_H), fy = s.y + ROOF_H;
+      const storeys = Math.floor(fh / (TOWER.storey * WALL_SCALE));
+      if (fh > 0) {
         this.add.rectangle(s.x, s.y, s.w, s.h, 0x0b0a10).setOrigin(0).setDepth(DEPTH.plat);
         // x stays world-aligned so neighbouring blocks line up; y starts the texture at a ledge
         this.add.tileSprite(s.x, fy, s.w, fh, wallKey).setOrigin(0).setDepth(DEPTH.plat)
@@ -168,7 +167,7 @@ export class GameScene extends Phaser.Scene {
             }
           }
         }
-        edge(s, 'roof');   // thin strip over the roof edge and first machinery row
+        edge(s, s.h >= 170 ? 'roof' : 'ground');
       } else {
         this.add.rectangle(s.x, s.y, s.w, s.h, 0x0b0a10).setOrigin(0).setDepth(DEPTH.plat);
         edge(s, 'ground');
@@ -306,7 +305,7 @@ export class GameScene extends Phaser.Scene {
 
     // enemies and pickups
     this.enemies = L.enemies.map(e => new Enemy(this, e));
-    this.chips = L.chips.map(ch => ({ ...ch, t: Math.random() * 6, plasmaT: Math.random() * .1, img: this.add.image(ch.x, ch.y, 'chip', 0).setOrigin(...chipMap.origin).setScale(CHIP_SCALE).setDepth(DEPTH.pickup) }));
+    this.chips = L.chips.map(ch => ({ ...ch, t: Math.random() * 6, plasmaT: Math.random() * .1, plasma: this.fx.createChipPlasma(ch.x, ch.y), img: this.add.image(ch.x, ch.y, 'chip', 0).setOrigin(...chipMap.origin).setScale(CHIP_SCALE).setDepth(DEPTH.pickup) }));
     this.boosts = L.boosts.map(b => {
       // the egg's core goes in first so the shell frames it; it glows in the shell's opening
       const core = b.type === 'egg' ? this.add.image(b.x, b.y + EGG_CORE_Y, 'egg-core').setOrigin(...propOrigin('egg-core')).setDepth(DEPTH.pickup) : null;
@@ -325,7 +324,7 @@ export class GameScene extends Phaser.Scene {
     const behind = x => x < cp.x - 40;
     for (const e of this.enemies) if (behind(e.x)) e.destroy();
     this.enemies = this.enemies.filter(e => !e.gone);
-    for (const c of this.chips) if (behind(c.x)) { c.img.destroy(); c.got = true; }
+    for (const c of this.chips) if (behind(c.x)) { c.img.destroy(); c.plasma.destroy(); c.got = true; }
     this.chips = this.chips.filter(c => !c.got);
   }
 
@@ -533,17 +532,20 @@ export class GameScene extends Phaser.Scene {
       c.img.setPosition(c.x, c.y + Math.sin(c.t * 3) * 4)
         .setScale(CHIP_SCALE)
         .setFrame(chipMap.animations.idle.start + Math.floor(c.t * chipMap.animations.idle.frameRate) % chipMap.frameCount);
+      c.plasma.setPosition(c.x, c.img.y);
       if (playing && Math.hypot(c.x - p.x, c.y - (p.y - 50)) < 11 + 34) {
-        c.got = true; c.img.destroy(); this.stats.chips++;
+        c.got = true; c.img.destroy(); c.plasma.destroy(); this.stats.chips++;
         this.addScore(10, c.x, c.y - 10, '+10', '#35e9ff', 12);
         SFX.chip(); this.fx.puff(c.x, c.y, 8, '#35e9ff', 160);
       }
-      // Emit only near the camera, and stop immediately when the chip is collected.
-      const view = this.cameras.main.worldView;
+
       c.plasmaT -= dt;
+      const view = this.cameras.main.worldView;
       if (!c.got && c.plasmaT <= 0 && c.x >= view.x - 30 && c.x <= view.right + 30
         && c.img.y >= view.y - 30 && c.img.y <= view.bottom + 30) {
-        this.fx.chipPlasma(c.x, c.img.y);
+        // Match the wisp footprint to the actual face/edge rotation frame.
+        const widths = [22, 18, 7, 18, 22, 18, 7, 18];
+        this.fx.chipPlasma(c.plasma, widths[c.img.frame.name] || 22);
         c.plasmaT = .1;
       }
     }

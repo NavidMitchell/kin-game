@@ -27,15 +27,23 @@ export class Fx {
       alpha: { onEmit: () => 0, onUpdate: (p, k, t) => Math.sin(t * Math.PI) * .18 },
       maxParticles: 100,
     }).setDepth(DEPTH.plat + .5);
-    // Overlapping soft wisps swell and fade into a luminous cloud behind each chip.
-    this.chipCloud = scene.add.particles(0, 0, 'puff', {
-      emitting: false, lifespan: { min: 900, max: 1400 },
-      speedX: { min: -3, max: 3 }, speedY: { min: -5, max: 2 },
-      scale: { start: .3, end: .75 },
-      alpha: { onEmit: () => 0, onUpdate: (p, k, t) => Math.sin(t * Math.PI) * .24 },
-      tint: [0x35e9ff, 0x72eaff, 0xaff6ff], blendMode: 'ADD',
-      maxParticles: 300,
-    }).setDepth(DEPTH.pickup - .1);
+
+  }
+
+  createChipPlasma(x, y) {
+    // Emitter-local particles inherit the chip's bob, including already-live wisps.
+    return this.scene.add.particles(x, y, 'puff', {
+      emitting: false, lifespan: { min: 350, max: 600 },
+      speedX: { min: -3, max: 3 }, speedY: { min: -4, max: 1 },
+      scale: { start: .12, end: .32 },
+      alpha: { onEmit: () => 0, onUpdate: (p, k, t) => Math.sin(t * Math.PI) * .14 },
+      tint: [0x35e9ff, 0x8bf3ff], blendMode: 'ADD', maxParticles: 8,
+    }).setDepth(DEPTH.pickup + .1);
+  }
+
+  chipPlasma(emitter, width) {
+    emitter.emitParticleAt((Math.random() - .5) * width * .7,
+      (Math.random() - .5) * 18, 1);
   }
 
   platformExhaust(x, y) {
@@ -55,13 +63,6 @@ export class Fx {
       if (vent.x < view.x - 40 || vent.x > view.right + 40
         || vent.y < view.y - 20 || vent.y > view.bottom + 80) continue;
       this.ventSteam.emitParticleAt(vent.x, vent.y, 4);
-    }
-  }
-
-  chipPlasma(x, y) {
-    // Small random offsets fill the centre instead of tracing a ring or orbit.
-    for (let i = 0; i < 2; i++) {
-      this.chipCloud.emitParticleAt(x + (Math.random() - .5) * 14, y + (Math.random() - .5) * 12, 1);
     }
   }
 
