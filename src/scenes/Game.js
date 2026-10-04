@@ -15,8 +15,12 @@ import { save } from '../save.js';
 
 const overlap = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 const BOOST_RESPAWN = 5;
-// assets/towers/*.webp: seamless facades, 8 storeys per tile, drawn at this scale
+// assets/towers/*.webp: seamless 1254px facades, 8 storeys per tile, drawn at this scale.
+// Measured in the art (texture px): a storey repeats every 156.75px, and each one begins with a lit
+// ledge about 25px tall whose top edge first appears at y = 141.
 const WALL_SCALE = 0.5;
+const TOWER = { storey: 1254 / 8, ledge: 25, firstLedge: 141 };
+const ROOF_H = 10;   // neon roof edge above the first ledge
 
 export class GameScene extends Phaser.Scene {
   constructor() { super('Game'); }
@@ -102,13 +106,21 @@ export class GameScene extends Phaser.Scene {
       const z = this.add.zone(s.x + s.w / 2, s.y + s.h / 2, s.w, s.h);
       z.plat = { solid: s };
       this.solidGroup.add(z);
-      const topH = Math.min(GTOP_H, s.h);
-      this.add.tileSprite(s.x, s.y - GTOP_PAD, s.w, topH + GTOP_PAD, groundTop(this, c)).setOrigin(0).setDepth(DEPTH.plat).setTilePosition(s.x % 120, 0);
-      if (s.h > GTOP_H) {
-        const fy = s.y + GTOP_H;
-        // tile offset in texture px keeps neighbouring blocks' facades lined up in world space
-        this.add.tileSprite(s.x, fy, s.w, s.h - GTOP_H, wallKey).setOrigin(0).setDepth(DEPTH.plat)
-          .setTileScale(WALL_SCALE, WALL_SCALE).setTilePosition(s.x / WALL_SCALE, fy / WALL_SCALE);
+      // tower facade: whole storeys only, starting on a ledge under the roof edge and ending on one,
+      // with a plain base below. Blocks too short for a storey keep the plain ground look.
+      const storeys = Math.floor((s.h - ROOF_H - TOWER.ledge * WALL_SCALE - 8) / (TOWER.storey * WALL_SCALE));
+      if (storeys >= 1) {
+        const fy = s.y + ROOF_H, fh = (storeys * TOWER.storey + TOWER.ledge) * WALL_SCALE;
+        this.add.rectangle(s.x, s.y, s.w, s.h, 0x0b0a10).setOrigin(0).setDepth(DEPTH.plat);
+        this.add.tileSprite(s.x, s.y - GTOP_PAD, s.w, ROOF_H + GTOP_PAD, groundTop(this, c)).setOrigin(0).setDepth(DEPTH.plat).setTilePosition(s.x % 120, 0);
+        // x stays world-aligned so neighbouring blocks line up; y starts the texture at a ledge
+        this.add.tileSprite(s.x, fy, s.w, fh, wallKey).setOrigin(0).setDepth(DEPTH.plat)
+          .setTileScale(WALL_SCALE, WALL_SCALE).setTilePosition(s.x / WALL_SCALE, TOWER.firstLedge);
+        if (fy + fh < s.y + s.h - 1) this.add.rectangle(s.x, fy + fh, s.w, 2, hexNum(c), .35).setOrigin(0).setDepth(DEPTH.plat);
+      } else {
+        const topH = Math.min(GTOP_H, s.h);
+        this.add.tileSprite(s.x, s.y - GTOP_PAD, s.w, topH + GTOP_PAD, groundTop(this, c)).setOrigin(0).setDepth(DEPTH.plat).setTilePosition(s.x % 120, 0);
+        if (s.h > GTOP_H) this.add.rectangle(s.x, s.y + GTOP_H, s.w, s.h - GTOP_H, 0x0b0a10).setOrigin(0).setDepth(DEPTH.plat);
       }
       // neon trim down any side that faces open air
       for (const side of [-1, 1]) {
