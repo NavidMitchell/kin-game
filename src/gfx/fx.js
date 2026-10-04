@@ -37,7 +37,7 @@ export class Fx {
       speedX: { min: -3, max: 3 }, speedY: { min: -4, max: 1 },
       scale: { start: .1, end: .25 },
       alpha: { onEmit: () => 0, onUpdate: (p, k, t) => Math.sin(t * Math.PI) * .18 },
-      tint: [0x35e9ff, 0x8bf3ff], blendMode: 'ADD', maxParticles: 6,
+      tint: [0x35e9ff, 0x8bf3ff], blendMode: 'ADD', maxParticles: 8,
     }).setDepth(DEPTH.pickup + .1);
   }
 
@@ -49,7 +49,7 @@ export class Fx {
     const view = this.scene.cameras.main.worldView;
     if (pickup.plasmaT > 0 || pickup.img.x < view.x - 40 || pickup.img.x > view.right + 40
       || y < view.y - 40 || y > view.bottom + 40) return;
-    pickup.plasmaT = .12;
+    pickup.plasmaT = .09;
     // Wisps emerge along the edges, not in an orbit or a detached background halo.
     const side = Math.random() < .5 ? -1 : 1;
     emitter.emitParticleAt(side * width * .55, (Math.random() - .5) * 16, 1);
