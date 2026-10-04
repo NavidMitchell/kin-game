@@ -1,0 +1,116 @@
+{
+  "platform-static": {
+    "width": 2172,
+    "height": 724,
+    "alphaRange": [
+      0,
+      255
+    ]
+  },
+  "platform-moving": {
+    "width": 2172,
+    "height": 724,
+    "alphaRange": [
+      0,
+      255
+    ]
+  },
+  "rooftop-strip": {
+    "width": 2172,
+    "height": 724,
+    "alphaRange": [
+      0,
+      255
+    ]
+  },
+  "checkpoint-inactive": {
+    "width": 887,
+    "height": 1774,
+    "alphaRange": [
+      0,
+      255
+    ]
+  },
+  "checkpoint-active": {
+    "width": 887,
+    "height": 1774,
+    "alphaRange": [
+      0,
+      255
+    ]
+  },
+  "jet-fuel": {
+    "width": 1024,
+    "height": 1536,
+    "alphaRange": [
+      0,
+      254
+    ]
+  },
+  "jetpack": {
+    "width": 1024,
+    "height": 1536,
+    "alphaRange": [
+      0,
+      254
+    ]
+  },
+  "egg-shell": {
+    "width": 1024,
+    "height": 1536,
+    "alphaRange": [
+      0,
+      254
+    ]
+  },
+  "egg-core": {
+    "width": 992,
+    "height": 1586,
+    "alphaRange": [
+      0,
+      254
+    ]
+  },
+  "repair-module": {
+    "width": 1254,
+    "height": 1254,
+    "alphaRange": [
+      0,
+      255
+    ]
+  },
+  "platform-left": {
+    "width": 600,
+    "height": 310,
+    "alphaRange": [
+      0,
+      255
+    ],
+    "assembly": "left + middle repeats + right; same vertical origin"
+  },
+  "platform-middle": {
+    "width": 972,
+    "height": 310,
+    "alphaRange": [
+      0,
+      255
+    ],
+    "repeat": "horizontal; crop final repeat to required width"
+  },
+  "platform-right": {
+    "width": 600,
+    "height": 310,
+    "alphaRange": [
+      0,
+      255
+    ]
+  },
+  "platform-thruster": {
+    "width": 400,
+    "height": 305,
+    "alphaRange": [
+      0,
+      255
+    ]
+  }
+}
