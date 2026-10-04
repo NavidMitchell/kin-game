@@ -1,6 +1,6 @@
 // Bakes every texture the game uses. Sprite-sheet frames are pre-scaled to world size (with their glow
 // baked in), and the neon props are drawn once with the same canvas code the original build drew per frame.
-import { FRAMES, SFR, DFR, SPR_SCALE, SH_SCALE, DR_SCALE } from '../config.js';
+import { FRAMES, SFR, DFR, DFR_FADE, SPR_SCALE, SH_SCALE, DR_SCALE, DASH_NOSE } from '../config.js';
 import { makeCanvas, rr, rgba, hexPath } from './draw.js';
 
 // normalized origin for every baked frame: ANCHORS[textureKey][frameName] = [ox, oy]
@@ -30,13 +30,49 @@ function bakeAtlas(scene, key, entries, { pad = 2, glow = null, blur = 0 } = {})
   for (const it of items) {
     ctx.save();
     if (glow) { ctx.shadowColor = glow; ctx.shadowBlur = blur; }
-    ctx.drawImage(it.img, it.rect[0], it.rect[1], it.rect[2], it.rect[3], it.x + pad, it.y + pad, it.dw, it.dh);
+    ctx.drawImage(cleanFrame(it.img, it.rect, it.fade), it.x + pad, it.y + pad, it.dw, it.dh);
     ctx.restore();
     const [ax, ay] = it.anchor(it.dw, it.dh);
     ANCHORS[key][it.name] = [(ax + pad) / it.w, (ay + pad) / it.h];
   }
   const tex = scene.textures.addCanvas(key, cv);
   for (const it of items) tex.add(it.name, 0, it.x, it.y, it.w, it.h);
+}
+
+// The sheets' frames sit close together, so a rectangle can pick up a piece of its neighbour (a nose, a laser
+// beam) at an edge. Copy the frame out, keep its largest shape and erase separate pieces touching an edge.
+function cleanFrame(img, [sx, sy, sw, sh], fade) {
+  const [cv, ctx] = makeCanvas(sw, sh);
+  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
+  if (fade) {
+    const [fx, fy, fw, fh] = fade, g = ctx.createLinearGradient(fx, 0, fx + fw, 0);
+    g.addColorStop(0, '#000'); g.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.save(); ctx.globalCompositeOperation = 'destination-out'; ctx.fillStyle = g; ctx.fillRect(fx, fy, fw, fh); ctx.restore();
+  }
+  const im = ctx.getImageData(0, 0, sw, sh), a = im.data, n = sw * sh;
+  const label = new Int32Array(n), comps = [];
+  for (let i = 0; i < n; i++) {
+    if (label[i] || a[i * 4 + 3] <= 96) continue;
+    const id = comps.length + 1, stack = [i], pixels = [];
+    let edge = false; label[i] = id;
+    while (stack.length) {
+      const j = stack.pop(), x = j % sw, y = (j - x) / sw;
+      pixels.push(j);
+      if (x === 0 || y === 0 || x === sw - 1 || y === sh - 1) edge = true;
+      for (const k of [j - 1, j + 1, j - sw, j + sw]) {
+        if (k < 0 || k >= n || label[k] || a[k * 4 + 3] <= 96) continue;
+        if ((k === j - 1 && x === 0) || (k === j + 1 && x === sw - 1)) continue;
+        label[k] = id; stack.push(k);
+      }
+    }
+    comps.push({ pixels, edge });
+  }
+  if (comps.length < 2) return cv;
+  const main = comps.reduce((m, c) => (c.pixels.length > m.pixels.length ? c : m));
+  let changed = false;
+  for (const c of comps) if (c !== main && c.edge) { for (const j of c.pixels) a[j * 4 + 3] = 0; changed = true; }
+  if (changed) ctx.putImageData(im, 0, 0);
+  return cv;
 }
 
 export function bakeSprites(scene) {
@@ -52,8 +88,10 @@ export function bakeSprites(scene) {
 
   const drones = [], shootBodyX = DFR.shoot[0][2] * DR_SCALE / 2;
   for (const [anim, rects] of Object.entries(DFR)) rects.forEach((rect, i) => drones.push({
-    name: anim + i, img: drone, rect, scale: DR_SCALE,
-    anchor: anim === 'shoot' ? (dw, dh) => [shootBodyX, dh / 2] : (dw, dh) => [dw / 2, dh / 2],
+    name: anim + i, img: drone, rect, scale: DR_SCALE, fade: DFR_FADE[anim + i],
+    anchor: anim === 'shoot' ? (dw, dh) => [shootBodyX, dh / 2]
+      : anim === 'dash' ? (dw, dh) => [dw - DASH_NOSE * DR_SCALE, dh / 2]
+      : (dw, dh) => [dw / 2, dh / 2],
   }));
   bakeAtlas(scene, 'drone', drones, { pad: 20, glow: '#ff2d55', blur: 16 });
 

@@ -18,10 +18,15 @@ export const SPR_SCALE = 0.5;   // sprite sheet px -> world px
 // Enemy drone sheet (faces right): hover, dash, laser, death
 export const DFR = {
   hover: [[55,44,317,212],[404,50,308,213],[747,49,316,216],[1109,50,314,209]],
-  dash:  [[6,331,235,154],[241,332,241,153],[482,335,242,151],[724,334,241,153],[965,334,241,154],[1206,333,239,147]],
+  // dash boundaries re-measured: the auto-detected ones cut each drone's nose off into the next frame
+  dash:  [[25,330,257,158],[282,330,242,158],[524,330,235,158],[759,330,234,158],[993,330,231,158],[1224,330,222,158]],
   shoot: [[29,567,303,192],[369,568,329,192],[725,569,361,198],[1086,569,348,190]],
   death: [[37,833,310,190],[383,832,313,191],[732,823,316,226],[1085,800,339,260]],
 };
+// shoot3's rectangle also catches the tail of shoot2's laser beam behind the drone; fade it out
+// (frame-local sheet px: the beam fades from fully erased at x to untouched at x + w)
+export const DFR_FADE = { shoot3: [0, 98, 100, 52] };
+export const DASH_NOSE = 158;   // dash frames: body centre sits this many sheet px left of the nose (right edge)
 export const DR_SCALE = 0.26, SHOOT_TIME = 0.7, SHOOT_FIRE = 0.38, LASER_SPEED = 560;
 
 // Player energy-shot sheet (faces right): charge, fire, projectile
