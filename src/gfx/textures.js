@@ -1,6 +1,6 @@
 // Bakes every texture the game uses. Sprite-sheet frames are pre-scaled to world size (with their glow
 // baked in), and the neon props are drawn once with the same canvas code the original build drew per frame.
-import { FRAMES, SFR, DFR, DFR_FADE, SPR_SCALE, SH_SCALE, DR_SCALE, DASH_NOSE } from '../config.js';
+import { SFR, DFR, DFR_FADE, SH_SCALE, DR_SCALE, DASH_NOSE } from '../config.js';
 import { makeCanvas, rr, rgba } from './draw.js';
 
 // normalized origin for every baked frame: ANCHORS[textureKey][frameName] = [ox, oy]
@@ -81,16 +81,8 @@ function dropEdgeFragments(ctx, sw, sh, threshold) {
 }
 
 export function bakeSprites(scene) {
-  const robot = scene.textures.get('robot-src').getSourceImage();
   const shoot = scene.textures.get('shoot-src').getSourceImage();
   const drone = scene.textures.get('drone-src').getSourceImage();
-  const feet = (dw, dh) => [dw / 2, dh];
-  const kin = [];
-  for (const [anim, rects] of Object.entries(FRAMES)) rects.forEach((rect, i) => kin.push({ name: anim + i, img: robot, rect, scale: SPR_SCALE, anchor: feet }));
-  // shoot frames keep the body 41px left of the feet so the charge glow extends forward
-  for (const anim of ['charge', 'fire']) SFR[anim].forEach(([x, y, w, h, bodyX], i) => kin.push({ name: anim + i, img: shoot, rect: [x, y, w, h], scale: SH_SCALE, anchor: (dw, dh) => [(bodyX - x) * SH_SCALE, dh] }));
-  bakeAtlas(scene, 'kin', kin, { pad: 2 });
-
   const drones = [], shootBodyX = DFR.shoot[0][2] * DR_SCALE / 2;
   for (const [anim, rects] of Object.entries(DFR)) rects.forEach((rect, i) => drones.push({
     name: anim + i, img: drone, rect, scale: DR_SCALE, fade: DFR_FADE[anim + i],
@@ -128,30 +120,12 @@ export function bakeProps(scene) {
     r.addColorStop(0, 'rgba(220,250,255,1)'); r.addColorStop(.4, 'rgba(140,235,255,.4)'); r.addColorStop(1, 'rgba(53,233,255,0)');
     ctx.fillStyle = r; ctx.fillRect(0, 0, 64, 64);
   });
-  // data chip (r=11) with glow, centered
-  bake(scene, 'chip', 58, 58, ctx => {
-    const c = 29, r = 11; ctx.translate(c, c);
-    ctx.shadowColor = '#35e9ff'; ctx.shadowBlur = 16; ctx.fillStyle = '#35e9ff';
-    ctx.beginPath(); ctx.moveTo(0, -r); ctx.lineTo(r, 0); ctx.lineTo(0, r); ctx.lineTo(-r, 0); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = '#e9fdff'; ctx.beginPath(); ctx.moveTo(0, -r * .45); ctx.lineTo(r * .45, 0); ctx.lineTo(0, r * .45); ctx.lineTo(-r * .45, 0); ctx.closePath(); ctx.fill();
-  });
   // enemy laser bolt, centered
   bake(scene, 'laser', 76, 38, ctx => {
     ctx.translate(38, 19); ctx.shadowColor = '#ff2d55'; ctx.shadowBlur = 14;
     ctx.fillStyle = '#ff2d55'; ctx.fillRect(-22, -3, 44, 6); ctx.fillStyle = '#fff'; ctx.fillRect(-16, -1, 32, 2);
   });
-  // jet pack worn on the back, centered (drawn at -26,-58 from the feet)
-  bake(scene, 'jetpack', 48, 72, ctx => {
-    ctx.translate(24, 36); ctx.shadowColor = '#35e9ff'; ctx.shadowBlur = 14;
-    ctx.fillStyle = '#0e1a1f'; rr(ctx, -8, -20, 16, 40, 5); ctx.fill();
-    ctx.fillStyle = '#35e9ff'; ctx.fillRect(-8, -8, 16, 3); ctx.fillRect(-8, 6, 16, 3);
-  });
-  // thruster flame, anchored at its top centre (length 40, scaled at runtime)
-  bake(scene, 'flame', 40, 72, ctx => {
-    ctx.translate(20, 14); ctx.shadowColor = '#35e9ff'; ctx.shadowBlur = 14;
-    ctx.fillStyle = '#35e9ff'; ctx.beginPath(); ctx.moveTo(-7, 0); ctx.lineTo(7, 0); ctx.lineTo(0, 40); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.moveTo(-4, 0); ctx.lineTo(4, 0); ctx.lineTo(0, 20); ctx.closePath(); ctx.fill();
-  });
+
 }
 
 // ---------------------------------------------------------------- level-themed textures

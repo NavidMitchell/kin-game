@@ -27,7 +27,7 @@ Code-drawn visuals are still right for things that are genuinely procedural or d
 - neon edge lines whose length or colour comes from level data
 - debug overlays
 
-Existing hand-drawn art that would be better as assets, to convert when it's next worked on: the jet pack Kin wears (`assets/world/jetpack.webp` exists but isn't wired in yet) and the data chip (both in `src/gfx/textures.js`).
+Kin uses `assets/player/kin.webp` and `kin.json`: a uniform grid with shared feet origin, explicit animation frame arrays, and baked jetpack/thrust variants. Data chips use `assets/world/data-chip.webp` and its frame map; the game adds rotation and vertical bobbing.
 
 Loaded artwork is sized in `src/gfx/art.js`: it records where each picture sits in its file, how big it's drawn and its anchor, and resamples each file once at load to the size it's drawn at (the game renders at 960x540 and WebGL1 has no mipmaps here). Measure a replacement's crop and anchor there rather than deriving physics from image sizes.
 

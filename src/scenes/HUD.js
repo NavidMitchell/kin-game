@@ -1,7 +1,9 @@
+import kinMap from '../../assets/player/kin.json';
+import { animationFrame } from '../gfx/kin-frames.js';
 // Heads-up display, running on top of the Game scene. The panels are drawn with the same canvas code as
 // the original build into small canvas textures; the vignette, flash and banner are Phaser objects.
 import Phaser from 'phaser';
-import { W, H, FRAMES, MAX_HP, CYAN } from '../config.js';
+import { W, H, MAX_HP, CYAN } from '../config.js';
 import { panel, spaced, hexPath, chamfer, fmt, rgba } from '../gfx/draw.js';
 import { save } from '../save.js';
 
@@ -24,7 +26,7 @@ export class HUDScene extends Phaser.Scene {
     this.banImg = this.add.image(W / 2, 120, 'hud-banner').setVisible(false);
     this.vignette = this.add.image(0, 0, 'vignette').setOrigin(0).setAlpha(0);
     this.flash = this.add.rectangle(0, 0, W, H, 0xff2d55).setOrigin(0).setAlpha(0);
-    this.portrait = this.textures.get('robot-src').getSourceImage();
+    this.portrait = this.textures.get('kin').getSourceImage();
     this.dispScore = this.game_.stats.score; this.lastScore = this.dispScore; this.scorePopT = 0;
     this.banner = null; this.lastPill = '';
     this.game_.events.on('banner', this.onBanner, this);
@@ -62,8 +64,11 @@ export class HUDScene extends Phaser.Scene {
     ctx.save(); ctx.translate(M, M); ctx.scale(K, K);
     panel(ctx, 0, 0, 262, 64);
     ctx.save(); ctx.beginPath(); ctx.arc(34, 32, 24, 0, Math.PI * 2); ctx.fillStyle = '#0b1420'; ctx.fill(); ctx.clip();
-    const f = FRAMES.idle[Math.floor(t * 5) % 4], sc = 50 / 120;
-    ctx.drawImage(this.portrait, f[0] + 10, f[1], f[2] - 20, 120, 34 - (f[2] - 20) * sc / 2, 8, (f[2] - 20) * sc, 120 * sc);
+    const frame = animationFrame(kinMap.animations.idle, t);
+    const sx = (frame % kinMap.columns) * kinMap.frameWidth;
+    const sy = Math.floor(frame / kinMap.columns) * kinMap.frameHeight;
+    // Fixed portrait window within the uniform idle cell, including the raised crown.
+    ctx.drawImage(this.portrait, sx + 70, sy + 55, 180, 135, 4, 8, 60, 45);
     ctx.restore();
     ctx.save(); ctx.beginPath(); ctx.arc(34, 32, 24, 0, Math.PI * 2); ctx.strokeStyle = CYAN; ctx.lineWidth = 2; ctx.shadowColor = CYAN; ctx.shadowBlur = 12; ctx.stroke(); ctx.restore();
     spaced(ctx, 'LIVES', 72, 18, 12, 600, 'rgba(190,230,240,.75)', 'left', 2);

@@ -3,7 +3,10 @@ import Phaser from 'phaser';
 import { W, H } from '../config.js';
 import { bakeSprites, bakeProps, bakeScreens } from '../gfx/textures.js';
 import { fitArt, PROPS } from '../gfx/art.js';
-import robotUrl from '../../assets/robot.webp';
+import kinUrl from '../../assets/player/kin.webp';
+import kinMap from '../../assets/player/kin.json';
+import chipUrl from '../../assets/world/data-chip.webp';
+import chipMap from '../../assets/world/data-chip.json';
 import shootUrl from '../../assets/robot_shoot.webp';
 import droneUrl from '../../assets/drone.webp';
 import cityUrl from '../../assets/city.webp';
@@ -18,7 +21,7 @@ import logoSvg from '../../assets/kinotic-logo.svg?raw';
 const GATE_URLS = import.meta.glob('../../assets/exit-gates/exit-gate-*.webp', { eager: true, import: 'default' });
 const PLATFORM_URLS = import.meta.glob('../../assets/platform/*/*.webp', { eager: true, import: 'default' });
 const EDGE_URLS = import.meta.glob('../../assets/world/ground-rooftop/*/ground-edge.webp', { eager: true, import: 'default' });
-// (jetpack.webp isn't used yet: the worn jet pack is still drawn in textures.js)
+// Worn jetpacks are included in the unified Kin sheet.
 const WORLD_URLS = import.meta.glob(['../../assets/world/*.webp', '!**/jetpack.webp'], { eager: true, import: 'default' });
 
 export class PreloadScene extends Phaser.Scene {
@@ -28,7 +31,8 @@ export class PreloadScene extends Phaser.Scene {
     const bar = this.add.rectangle(W / 2 - 150, H / 2, 0, 4, 0x35e9ff).setOrigin(0, .5);
     this.add.rectangle(W / 2, H / 2, 300, 4, 0x35e9ff, .15);
     this.load.on('progress', v => { bar.width = 300 * v; });
-    this.load.image('robot-src', robotUrl);
+    this.load.spritesheet('kin', kinUrl, { frameWidth: kinMap.frameWidth, frameHeight: kinMap.frameHeight, endFrame: kinMap.frameCount - 1 });
+    this.load.spritesheet('chip', chipUrl, { frameWidth: chipMap.frameWidth, frameHeight: chipMap.frameHeight, endFrame: chipMap.frameCount - 1 });
     this.load.image('shoot-src', shootUrl);
     this.load.image('drone-src', droneUrl);
     this.load.image('city', cityUrl);

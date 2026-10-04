@@ -7,14 +7,6 @@ export const COYOTE = 0.1, JUMP_BUFFER = 0.12, ATK_BUFFER = 0.15;
 export const PLAYER_W = 28, PLAYER_H = 100, PLAYER_DUCK_H = 50;
 export const INVULN = 1.4, MAX_HP = 3;
 
-// Frame rectangles auto-detected from the alpha channel of the sprite sheets
-export const FRAMES = {
-  idle:   [[299,76,164,210],[514,78,166,208],[735,78,162,207],[946,77,162,209]],
-  run:    [[77,328,172,220],[293,331,177,217],[518,333,169,216],[735,330,176,217],[963,332,178,216],[1183,334,199,215]],
-  jump:   [[77,660,185,165],[315,588,163,208],[544,594,159,198],[758,592,150,200],[989,589,157,205],[1214,590,161,209]],
-};
-export const SPR_SCALE = 0.5;   // sprite sheet px -> world px
-
 // Enemy drone sheet (faces right): hover, dash, laser, death
 export const DFR = {
   hover: [[55,44,317,212],[404,50,308,213],[747,49,316,216],[1109,50,314,209]],

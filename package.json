@@ -8,7 +8,8 @@
     "build": "vite build",
     "build:standalone": "vite build --mode standalone && node tools/inline.mjs",
     "preview": "vite preview --port 8765",
-    "check-levels": "node tools/check-levels.mjs"
+    "check-levels": "node tools/check-levels.mjs",
+    "test": "node --test tests/*.test.js"
   },
   "dependencies": {
     "phaser": "4.2.1"

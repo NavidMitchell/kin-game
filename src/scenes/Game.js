@@ -1,5 +1,6 @@
 // One level: builds the world from its Tiled map, runs combat, pickups, checkpoints and the exit gate.
 import Phaser from 'phaser';
+import chipMap from '../../assets/world/data-chip.json';
 import { W, H, DEPTH, JUMP_V, MAX_HP, INVULN, SHOT_SPEED, LASER_SPEED, HUD_FONT } from '../config.js';
 import { LEVELS } from '../levels/index.js';
 import { findPits } from '../levels/parse.js';
@@ -16,6 +17,7 @@ import { save } from '../save.js';
 
 const overlap = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 const BOOST_RESPAWN = 5;
+const CHIP_SCALE = 22 / chipMap.diamondSize;
 // assets/towers/*.webp: seamless 1254px facades, 8 storeys per tile, drawn at this scale.
 // Measured in the art (texture px): a storey repeats every 156.75px, and each one begins with a lit
 // ledge about 25px tall whose top edge first appears at y = 141.
@@ -263,7 +265,7 @@ export class GameScene extends Phaser.Scene {
 
     // enemies and pickups
     this.enemies = L.enemies.map(e => new Enemy(this, e));
-    this.chips = L.chips.map(ch => ({ ...ch, t: Math.random() * 6, img: this.add.image(ch.x, ch.y, 'chip').setDepth(DEPTH.pickup) }));
+    this.chips = L.chips.map(ch => ({ ...ch, t: Math.random() * 6, img: this.add.image(ch.x, ch.y, 'chip', 0).setOrigin(...chipMap.origin).setScale(CHIP_SCALE).setDepth(DEPTH.pickup) }));
     this.boosts = L.boosts.map(b => {
       // the egg's core goes in first so the shell frames it; it glows in the shell's opening
       const core = b.type === 'egg' ? this.add.image(b.x, b.y + EGG_CORE_Y, 'egg-core').setOrigin(...propOrigin('egg-core')).setDepth(DEPTH.pickup) : null;
@@ -474,7 +476,9 @@ export class GameScene extends Phaser.Scene {
     const p = this.player, playing = this.mode === 'play';
     for (const c of this.chips) {
       c.t += dt;
-      c.img.setPosition(c.x, c.y + Math.sin(c.t * 3) * 4).setScale(Math.abs(Math.cos(c.t * 2.2)) * .9 + .1, 1);
+      c.img.setPosition(c.x, c.y + Math.sin(c.t * 3) * 4)
+        .setScale(CHIP_SCALE * (Math.abs(Math.cos(c.t * 2.2)) * .9 + .1), CHIP_SCALE)
+        .setFrame(chipMap.animations.idle.start + Math.floor(c.t * chipMap.animations.idle.frameRate) % chipMap.frameCount);
       if (playing && Math.hypot(c.x - p.x, c.y - (p.y - 50)) < 11 + 34) {
         c.got = true; c.img.destroy(); this.stats.chips++;
         this.addScore(10, c.x, c.y - 10, '+10', '#35e9ff', 12);

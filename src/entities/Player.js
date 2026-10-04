@@ -6,7 +6,8 @@ import {
   PLAYER_W, PLAYER_H, PLAYER_DUCK_H, ATK_TIME, ATK_FIRE, DEPTH,
 } from '../config.js';
 import { held } from '../controls.js';
-import { setAnchoredFrame } from '../gfx/textures.js';
+import kinMap from '../../assets/player/kin.json';
+import { kinFrame } from '../gfx/kin-frames.js';
 import { SFX, thruster } from '../audio/sfx.js';
 
 const rnd = (a, b) => a + Math.random() * (b - a);
@@ -21,11 +22,9 @@ export class Player {
 
     this.shadow = scene.add.ellipse(x, y + 2, 56, 12, 0x000000, .45).setDepth(DEPTH.player);
     this.view = scene.add.container(x, y).setDepth(DEPTH.player);
-    this.jetIdle = scene.add.rectangle(-26, -36, 8, 4, 0x35e9ff).setVisible(false);
-    this.flame = scene.add.image(-26, -38, 'flame').setOrigin(.5, 14 / 72).setVisible(false);
-    this.pack = scene.add.image(-26, -58, 'jetpack').setVisible(false);
-    this.sprite = scene.add.sprite(0, 0, 'kin', 'idle0');
-    this.view.add([this.jetIdle, this.flame, this.pack, this.sprite]);
+    this.sprite = scene.add.sprite(0, 0, 'kin', kinMap.animations.idle.frames[0])
+      .setOrigin(...kinMap.origin).setScale(kinMap.worldScale);
+    this.view.add(this.sprite);
     this.exhaust = scene.add.particles(0, 0, 'px', {
       emitting: false, lifespan: { min: 150, max: 350 }, speedY: { min: 220, max: 420 },
       x: { onEmit: () => rnd(-6, 6) }, speedX: { onEmit: () => -this.face * rnd(40, 120) + this.vx * .3 },
@@ -122,20 +121,9 @@ export class Player {
     this.render(dt);
   }
 
-  frameName() {
-    const t = this.t;
-    if (this.state === 'attack') {
-      if (t < ATK_FIRE) return 'charge' + (1 + Math.min(5, Math.floor(t / ATK_FIRE * 6)));
-      return 'fire' + Math.min(3, Math.floor((t - ATK_FIRE) / (ATK_TIME - ATK_FIRE) * 4));
-    }
-    if (this.state === 'jump' && this.thrust) return 'jump3';
-    if (this.state === 'jump') {
-      const vy = this.body.velocity.y;
-      return 'jump' + (vy < -500 ? 1 : vy < -150 ? 2 : vy < 150 ? 3 : vy < 600 ? 4 : 5);
-    }
-    if (this.state === 'duck' || this.landT > 0) return 'jump0';
-    if (this.state === 'run') return 'run' + Math.floor(t * 12) % 6;
-    return 'idle' + Math.floor(t * 5) % 4;
+  frameIndex() {
+    return kinFrame(kinMap, { state: this.state, t: this.t, jet: this.jet,
+      thrust: this.thrust, vy: this.vy, landT: this.landT });
   }
 
   // visuals follow the body (called after movement each frame)
@@ -143,14 +131,9 @@ export class Player {
     const x = this.x, y = this.y;
     this.view.setPosition(x, y).setScale(this.face, 1);
     this.shadow.setPosition(x, y + 2);
-    setAnchoredFrame(this.sprite, 'kin', this.frameName());
+    this.sprite.setFrame(this.frameIndex());
     this.view.setVisible(!this.hidden && !(this.inv > 0 && Math.floor(this.inv * 14) % 2 === 0));   // blink while invulnerable
     this.shadow.setVisible(!this.hidden);
-    this.pack.setVisible(this.jet);
-    this.flame.setVisible(this.jet && this.thrust);
-    this.jetIdle.setVisible(this.jet && !this.thrust);
-    if (this.thrust) this.flame.setScale(1, (22 + Math.random() * 18) / 40);
-    if (this.jet && !this.thrust) this.jetIdle.setAlpha(.4 + Math.sin(this.scene.time.now / 1000 * 12) * .3);
     this.exhaust.emitting = this.thrust;
     if (this.thrust) this.exhaust.setPosition(x - this.face * 14, y - 8);
   }
