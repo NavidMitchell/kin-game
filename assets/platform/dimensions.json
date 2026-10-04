@@ -1,0 +1,17 @@
+{
+  "cap": [
+    400,
+    310
+  ],
+  "middle": [
+    972,
+    310
+  ],
+  "thruster": [
+    400,
+    305
+  ],
+  "referenceSolidHeight": 230,
+  "scaleFor26pxDeck": 0.11304347826086956,
+  "minimumWidthAt26pxDeck": 90.43478260869566
+}
