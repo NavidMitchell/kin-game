@@ -41,7 +41,7 @@ The first time you start from the title screen, a six-slide opening story plays 
 | 5 | Core Breach | The final gauntlet, mixing everything above |
 
 - Clearing a level unlocks the next one. The level select screen shows each level's best score, saved in the browser.
-- Each level ends at an exit gate. The clear screen adds bonuses to your score: time under par (+10 per second), all chips collected (+500) and no damage taken (+500).
+- Each level ends at an exit gate. Its doorway glows brighter as you get close. The clear screen adds bonuses to your score: time under par (+10 per second), all chips collected (+500) and no damage taken (+500).
 - Three life cores per level. Falling into a pit costs one and respawns you on the last solid ground you stood on. Repair kits restore a core.
 - Checkpoint beacons: if you run out of lives, Retry resumes at the last checkpoint you reached, with the score you had there.
 - Two drone types: fast ground skimmers and hover drones that fire lasers when you are level with them. Shoot or stomp either for 100 points. Your shots also knock lasers out of the air. Duck under lasers, or hide behind pillars.
@@ -64,7 +64,7 @@ Levels are [Tiled](https://www.mapeditor.org) maps in `src/levels/level1.json` t
   - `chips`, with properties `count`, `spacing`, `arc`
   - `tank`, `egg`, `repair`
   - `hint`, with property `text`
-- **Map properties**: `name`, `subtitle`, `color`, `bgHue`, `bgTint`, `wall` (optional tower art for solid ground: `red`, `magenta`, `orange` or `green`, from `assets/towers/`; leave it out for plain ground, as every level but The Spire does), `bpm`, `transpose`, `par`.
+- **Map properties**: `name`, `subtitle`, `color`, `bgHue`, `bgTint`, `wall` (optional tower art for solid ground: `red`, `magenta`, `orange` or `green`, from `assets/towers/`; leave it out for plain ground, as every level but The Spire does), `gate` (exit gate art: `cyan`, `magenta`, `orange`, `green` or `red-blue`, from `assets/gates/`; default `cyan`), `bpm`, `transpose`, `par`.
 
 Gaps between pieces of `ground` that reach the bottom of the map become glowing pits automatically. After editing, run:
 
@@ -88,7 +88,8 @@ src/gfx/                texture baking (neon props, glowing sprite atlases), par
 src/audio/              synthesised sound effects and music
 src/levels/             Tiled maps + parser
 tools/                  level checker, single-file build step
-assets/                 sprite sheets, background, tower facades (towers/), story slides, title poster, logo
+assets/                 sprite sheets, background, tower facades (towers/), exit gates (gates/: 680px copies of the full-size
+                        masters in colored-exit-gates-webp/), story slides, title poster, logo
 ```
 
 ## Building

@@ -57,6 +57,11 @@
    "name": "wall",
    "type": "string",
    "value": "orange"
+  },
+  {
+   "name": "gate",
+   "type": "string",
+   "value": "orange"
   }
  ],
  "layers": [

@@ -10,6 +10,11 @@ import towerRed from '../../assets/towers/red.webp';
 import towerMagenta from '../../assets/towers/magenta.webp';
 import towerOrange from '../../assets/towers/orange.webp';
 import towerGreen from '../../assets/towers/green.webp';
+import gateCyan from '../../assets/gates/cyan.webp';
+import gateMagenta from '../../assets/gates/magenta.webp';
+import gateOrange from '../../assets/gates/orange.webp';
+import gateGreen from '../../assets/gates/green.webp';
+import gateRedBlue from '../../assets/gates/red-blue.webp';
 import titleUrl from '../../assets/title.jpg';
 import logoSvg from '../../assets/kinotic-logo.svg?raw';
 
@@ -29,6 +34,12 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('tower-magenta', towerMagenta);
     this.load.image('tower-orange', towerOrange);
     this.load.image('tower-green', towerGreen);
+    // exit gates; each level picks one with its `gate` map property
+    this.load.image('gate-cyan', gateCyan);
+    this.load.image('gate-magenta', gateMagenta);
+    this.load.image('gate-orange', gateOrange);
+    this.load.image('gate-green', gateGreen);
+    this.load.image('gate-red-blue', gateRedBlue);
     this.load.image('title', titleUrl);
     // Phaser decodes data: URIs as base64, so hand it the SVG that way (works in the single-file build too)
     this.load.svg('logo', 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(logoSvg))), { width: 480 });
