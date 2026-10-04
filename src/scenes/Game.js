@@ -133,21 +133,31 @@ export class GameScene extends Phaser.Scene {
         this.add.tileSprite(s.x, fy, s.w, fh, wallKey).setOrigin(0).setDepth(DEPTH.plat)
           .setTileScale(WALL_SCALE, WALL_SCALE).setTilePosition(s.x / WALL_SCALE, TOWER.firstLedge).setTint(hexNum(c));
         if (fy + fh < s.y + s.h - 1) this.add.rectangle(s.x, fy + fh, s.w, 2, hexNum(c), .35).setOrigin(0).setDepth(DEPTH.plat);
-        // Fit complete pipe assemblies across the block; leave partial bottom rows
-        // as plain cooling panels so elbows and fittings never get cut in half.
-        const columns = Math.ceil(s.w / 320), assembly = s.w / columns;
-        for (let row = 0; row < Math.floor(fh / assembly); row++) {
-          for (let col = 0; col < columns; col++) {
-            this.add.image(s.x + col * assembly, fy + row * assembly, 'cooling-pipes')
-              .setOrigin(0).setDisplaySize(assembly, assembly).setTint(hexNum(c)).setDepth(DEPTH.plat);
+        // Pipes are independent of the wall repeat: mostly straight runs, with
+        // occasional fittings. Every module returns to the same centreline.
+        const pipeXs = [], centres = [190.5, 175, 199, 161.5];
+        const runs = Math.max(1, Math.floor(s.w / 260)), scale = .24, segmentH = 998 * scale;
+        for (let run = 0; run < runs; run++) {
+          const px = s.x + s.w * (run + .4) / runs;
+          pipeXs.push(px);
+          let py = fy, index = 0;
+          while (py + segmentH <= fy + fh) {
+            const seed = Math.abs(Math.floor(s.x * 13 + s.y * 7 + run * 31 + index * 17));
+            const frame = seed % 5 < 3 ? 0 : 1 + seed % 3;
+            this.add.image(px, py, 'pipe-modules', frame).setOrigin(centres[frame] / 384, 0)
+              .setScale(scale).setDepth(DEPTH.plat + .1);
+            py += segmentH; index++;
           }
+          // Only a plain straight section is shortened to fit the remaining height.
+          if (py < fy + fh) this.add.image(px, py, 'pipe-modules', 'straight-fill')
+            .setOrigin(centres[0] / 384, 0).setDisplaySize(384 * scale, fy + fh - py).setDepth(DEPTH.plat + .1);
         }
         // Vent outlets follow the world-aligned panel grid, never clipped block edges.
         const panel = TOWER.storey * WALL_SCALE;
         for (let row = 0; row < storeys; row++) {
           for (let col = Math.floor(s.x / panel); col * panel < s.x + s.w; col++) {
             const vx = (col + .55) * panel;
-            if (vx > s.x + 20 && vx < s.x + s.w - 20) {
+            if (vx > s.x + 20 && vx < s.x + s.w - 20 && pipeXs.every(px => Math.abs(px - vx) > 40)) {
               this.fx.addCoolingVent(vx, fy + (row + .3) * panel);
             }
           }
