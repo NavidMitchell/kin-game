@@ -41,6 +41,7 @@ export class SelectScene extends Phaser.Scene {
       if (code === 'ArrowRight' || code === 'KeyD') { this.sel = (this.sel + 1) % LEVELS.length; SFX.select(); this.draw(); }
       if (isConfirm(code) || isShoot(code)) this.play();
       if (isBack(code)) { SFX.confirm(); this.scene.start('Title'); }
+      if (code === 'KeyS') { SFX.confirm(); releaseAll(); this.scene.start('Story'); }
     });
   }
 
@@ -88,7 +89,7 @@ export class SelectScene extends Phaser.Scene {
     });
     const L = LEVELS[this.sel], locked = this.sel + 1 > this.unlocked;
     spaced(ctx, locked ? `CLEAR LEVEL ${this.sel} TO UNLOCK` : `PAR TIME  ${Math.floor(L.par / 60)}:${String(L.par % 60).padStart(2, '0')}`, W / 2, 432, 14, 700, locked ? 'rgba(255,120,150,.9)' : rgba(L.color, .9), 'center', 3);
-    spaced(ctx, '← →  choose     SPACE  play     ESC  back     M  music', W / 2, 490, 13, 600, 'rgba(190,230,240,.6)', 'center', 1.5);
+    spaced(ctx, '← →  choose     SPACE  play     S  story     ESC  back     M  music', W / 2, 490, 13, 600, 'rgba(190,230,240,.6)', 'center', 1.5);
     this.tex.refresh();
   }
 }

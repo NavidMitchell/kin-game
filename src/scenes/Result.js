@@ -87,7 +87,7 @@ export class ResultScene extends Phaser.Scene {
       stats.forEach(([k, v], i) => { const x = W / 2 - 195 + i * 130; spaced(ctx, k, x, 222, 11, 600, 'rgba(190,230,240,.7)', 'center', 2.5); spaced(ctx, v, x, 252, 26, 700, '#ffffff', 'center', .5, CYAN); });
       const cp = d.checkpoint >= 0;
       spaced(ctx, cp ? 'RETRY RESUMES AT YOUR LAST CHECKPOINT' : 'RETRY RESTARTS THE LEVEL', W / 2, 300, 13, 600, cp ? 'rgba(53,233,255,.85)' : 'rgba(255,160,180,.9)', 'center', 2.5);
-      spaced(ctx, '← →  move    SPACE  jump    ↓  duck    V / B / N  shoot    ESC  pause', W / 2, 350, 13, 600, 'rgba(255,160,180,.75)', 'center', 1.5);
+      spaced(ctx, '← →  move    SPACE  jump    ↓  duck    SHIFT  shoot    ESC  pause', W / 2, 350, 13, 600, 'rgba(255,160,180,.75)', 'center', 1.5);
       this.tex.refresh(); return;
     }
     // clear / victory: count up the bonuses

@@ -10,11 +10,11 @@ export const held = {
   right: () => keys.ArrowRight || keys.KeyD,
   jump:  () => keys.Space || keys.ArrowUp || keys.KeyW,
   down:  () => keys.ArrowDown || keys.KeyS,
-  shoot: () => keys.KeyV || keys.KeyB || keys.KeyN,
+  shoot: () => keys.KeyV || keys.KeyB || keys.KeyN || keys.ShiftLeft,
 };
 
 export const isJump  = c => c === 'Space' || c === 'ArrowUp' || c === 'KeyW';
-export const isShoot = c => c === 'KeyV' || c === 'KeyB' || c === 'KeyN';
+export const isShoot = c => c === 'KeyV' || c === 'KeyB' || c === 'KeyN' || c === 'ShiftLeft';
 export const isConfirm = c => c === 'Space' || c === 'Enter';
 export const isBack = c => c === 'Escape' || c === 'KeyP' || c === 'Pause';
 

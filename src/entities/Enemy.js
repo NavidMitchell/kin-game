@@ -12,7 +12,7 @@ export class Enemy {
     Object.assign(this, {
       scene, type, x, y, w: 70, h: 44, face: d, vx: d * (type === 'drone' ? 90 : 130),
       minX: x - range, maxX: x + range, alive: true, t: Math.random() * 6, dieT: 0, shootT: 0, cool: rnd(1, 3),
-      warned: false, fired: false, gone: false,
+      warned: false, fired: false, gone: false, lookT: rnd(.5, 2),
     });
     this.sprite = scene.add.sprite(x, y, 'drone', 'hover0').setDepth(DEPTH.enemy);
     this.render();
@@ -33,10 +33,17 @@ export class Enemy {
       if (!this.fired && this.shootT >= SHOOT_FIRE) { this.fired = true; this.scene.fireLaser(this.x + this.face * 34, ey + this.h * .55, this.face); }
       if (this.shootT >= SHOOT_TIME) this.shootT = 0;
     } else {
-      this.x += this.vx * dt;
-      if (this.x < this.minX) { this.x = this.minX; this.vx = Math.abs(this.vx); }
-      if (this.x > this.maxX) { this.x = this.maxX; this.vx = -Math.abs(this.vx); }
-      this.face = this.vx < 0 ? -1 : 1;
+      if (this.maxX - this.minX < 2) {
+        // stationary (range 0): hold position and scan back and forth, as if searching for the player.
+        // (Patrolling a zero-width range would flip direction every frame instead.)
+        this.lookT -= dt;
+        if (this.lookT <= 0) { this.face = -this.face; this.lookT = rnd(1.2, 2.2); }
+      } else {
+        this.x += this.vx * dt;
+        if (this.x < this.minX) { this.x = this.minX; this.vx = Math.abs(this.vx); }
+        if (this.x > this.maxX) { this.x = this.maxX; this.vx = -Math.abs(this.vx); }
+        this.face = this.vx < 0 ? -1 : 1;
+      }
       this.cool -= dt;
       if (this.type === 'drone' && this.cool <= 0 && onScreen && !player.frozen) {
         const dx = player.x - this.x, dy = (player.y - 50) - (ey + this.h * .5);

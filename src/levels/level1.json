@@ -47,6 +47,11 @@
    "name": "par",
    "type": "int",
    "value": 80
+  },
+  {
+   "name": "wall",
+   "type": "string",
+   "value": "red"
   }
  ],
  "layers": [
@@ -231,7 +236,7 @@
       {
        "name": "text",
        "type": "string",
-       "value": "← →  MOVE        SPACE  JUMP  (hold for height)"
+       "value": "\u2190 \u2192  MOVE        SPACE  JUMP  (hold for height)"
       }
      ]
     },
@@ -307,7 +312,7 @@
       {
        "name": "text",
        "type": "string",
-       "value": "V / B / N  SHOOT      or jump on enemies to stomp them"
+       "value": "SHIFT or V / B / N  SHOOT      or jump on enemies to stomp them"
       }
      ]
     },
@@ -364,7 +369,7 @@
       {
        "name": "text",
        "type": "string",
-       "value": "↓  DUCK under drones and their lasers"
+       "value": "\u2193  DUCK under drones and their lasers"
       }
      ]
     },

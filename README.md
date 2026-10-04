@@ -18,13 +18,17 @@ Or run `npm install` and then `npm run dev`.
 | Move | ← → or A D |
 | Jump (hold for height) | Space, W, or ↑ |
 | Duck | ↓ or S |
-| Shoot | V, B, or N |
+| Shoot | Left Shift, V, B, or N |
 | Pause | Esc or P |
 | Menus | ← → to choose, Space or Enter to select |
 | Toggle music | M |
 | Fullscreen | F |
 
 On touch devices, on-screen buttons appear automatically, including duck and pause.
+
+## Story
+
+The first time you start from the title screen, a six-slide opening story plays before level select. After that it's skipped; press S on level select to watch it again. Space, Enter or a click advances; Esc or SKIP jumps straight to level select. Slides advance on their own after a few seconds, except the last, which waits for Space. The slides are `assets/story/1.webp` to `6.webp`.
 
 ## Levels
 
@@ -60,7 +64,7 @@ Levels are [Tiled](https://www.mapeditor.org) maps in `src/levels/level1.json` t
   - `chips`, with properties `count`, `spacing`, `arc`
   - `tank`, `egg`, `repair`
   - `hint`, with property `text`
-- **Map properties**: `name`, `subtitle`, `color`, `bgHue`, `bgTint`, `bpm`, `transpose`, `par`.
+- **Map properties**: `name`, `subtitle`, `color`, `bgHue`, `bgTint`, `wall` (tower art: `red`, `magenta`, `orange` or `green`, from `assets/towers/`), `bpm`, `transpose`, `par`.
 
 Gaps between pieces of `ground` that reach the bottom of the map become glowing pits automatically. After editing, run:
 
@@ -78,13 +82,13 @@ src/main.js             Phaser game config
 src/config.js           physics constants, sprite-sheet frame rectangles
 src/controls.js         keyboard + touch input
 src/save.js             unlocked levels and best scores (localStorage)
-src/scenes/             Preload, Title, Select, Game, HUD, Result (clear / game over / pause)
+src/scenes/             Preload, Title, Story, Select, Game, HUD, Result (clear / game over / pause)
 src/entities/           Player (Arcade body + visuals), Enemy (drones and skimmers)
 src/gfx/                texture baking (neon props, glowing sprite atlases), particles, canvas drawing helpers
 src/audio/              synthesised sound effects and music
 src/levels/             Tiled maps + parser
 tools/                  level checker, single-file build step
-assets/                 sprite sheets, background, title poster, logo
+assets/                 sprite sheets, background, tower facades (towers/), story slides, title poster, logo
 ```
 
 ## Building

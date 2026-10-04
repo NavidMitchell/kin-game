@@ -38,7 +38,8 @@ export class TitleScene extends Phaser.Scene {
     label.setPosition(bx, by + 1).setDepth(1);
     this.add.image(bx + tw + gap, by, 'logo').setOrigin(0, .5).setDisplaySize(lw, lh).setDepth(1);
 
-    const go = () => { SFX.confirm(); this.scene.start('Select'); };
+    // the opening story plays the first time; after that it's on level select (S)
+    const go = () => { SFX.confirm(); this.scene.start(save.storySeen() ? 'Select' : 'Story'); };
     onPress(this, code => { if (isConfirm(code)) go(); });
     this.input.once('pointerdown', go);
   }
