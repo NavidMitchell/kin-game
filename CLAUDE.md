@@ -15,7 +15,7 @@ If something is a picture, it should be an image file in `assets/` that the game
 
 When adding or changing art:
 
-- Make it an asset. Load it in `src/scenes/Preload.js` under a stable key, and keep the file path stable so a better version can be dropped in later.
+- Make it an asset. Load it under a stable key, in `src/scenes/Preload.js` (or, for large art used by a single scene such as the story slides, in that scene's `preload`), and keep the file path stable so a better version can be dropped in later.
 - Author it so the game can adapt it rather than baking variants. For example, draw it in neutral greys or white so `setTint()` can apply each level's colour, make textures seamless so `TileSprite` can repeat them, and keep sprite frames on clean, non-overlapping rectangles with transparent margins.
 - If you can't produce final art (no image generator available), still create a real asset file: a placeholder or a procedurally rendered texture saved to `assets/`. Say plainly that it's a stand-in. If you used a generator page or script to make it, put it in `tools/art/`, but the game must load the file, never run the generator.
 - Don't add new drawing code for things that are pictures. If you touch existing hand-drawn art (see below), prefer moving it to an asset.
@@ -30,6 +30,10 @@ Code-drawn visuals are still right for things that are genuinely procedural or d
 Existing hand-drawn art that would be better as assets, to convert when it's next worked on: platform tops and ledges, the jet tank, the egg pod, the repair kit, the exit gate, the checkpoint beacon and the data chip (all in `src/gfx/textures.js`).
 
 Sound effects and music are synthesised in code on purpose (`src/audio/`). Ask before replacing them with audio files.
+
+## Story
+
+The opening story (`src/scenes/Story.js`) plays after the title screen and can be skipped. Its six slides are `assets/story/1-6.webp`, with captions painted into the art. `6.webp` is a stand-in until the real slide is added.
 
 ## Levels
 

@@ -26,6 +26,10 @@ Or run `npm install` and then `npm run dev`.
 
 On touch devices, on-screen buttons appear automatically, including duck and pause.
 
+## Story
+
+Starting from the title screen plays a six-slide opening story before level select. Space, Enter or a click advances; Esc or SKIP jumps straight to level select. Slides advance on their own after a few seconds, except the last, which waits for Space. The slides are `assets/story/1.webp` to `6.webp`.
+
 ## Levels
 
 | # | Level | What's new |
@@ -78,13 +82,13 @@ src/main.js             Phaser game config
 src/config.js           physics constants, sprite-sheet frame rectangles
 src/controls.js         keyboard + touch input
 src/save.js             unlocked levels and best scores (localStorage)
-src/scenes/             Preload, Title, Select, Game, HUD, Result (clear / game over / pause)
+src/scenes/             Preload, Title, Story, Select, Game, HUD, Result (clear / game over / pause)
 src/entities/           Player (Arcade body + visuals), Enemy (drones and skimmers)
 src/gfx/                texture baking (neon props, glowing sprite atlases), particles, canvas drawing helpers
 src/audio/              synthesised sound effects and music
 src/levels/             Tiled maps + parser
 tools/                  level checker, single-file build step, art generators (tools/art)
-assets/                 sprite sheets, background, title poster, logo
+assets/                 sprite sheets, background, wall texture, story slides, title poster, logo
 ```
 
 ## Building
