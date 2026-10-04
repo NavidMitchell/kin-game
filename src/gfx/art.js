@@ -25,11 +25,11 @@ export const FLOAT_H = 26;      // collider thickness of ledges and lifts (uncha
 export const PLAT_PAD_X = 4, PLAT_PAD_TOP = 8;   // room for the caps' padding and the glow above the rail
 
 // Ground and rooftop edge strip (assets/world/ground-rooftop/<palette>/ground-edge.webp). The whole 2172px
-// strip tiles seamlessly as supplied (checked at game scale). Per palette: the walking-surface row, and the
-// rows where its glow starts and its metal ends.
+// strip tiles seamlessly as supplied (checked at game scale). Per palette: the walking-surface row (the rail's
+// first opaque row), and the rows where its glow starts and its metal ends.
 export const EDGE = {
   w: 2172,
-  rows: { cyan: [308, 288, 554], magenta: [286, 259, 550], orange: [288, 276, 555], green: [288, 271, 551], red: [298, 288, 555] },
+  rows: { cyan: [289, 283, 554], magenta: [306, 285, 554], orange: [310, 280, 554], green: [277, 271, 528], red: [307, 288, 550] },
   ground: 30,   // world px from the walking surface to the bottom of the strip on plain ground
   roof: 20,     // thinner on tower roofs, so it covers the roof edge and first ledge but no windows
 };
