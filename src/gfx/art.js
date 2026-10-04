@@ -27,6 +27,7 @@ export const PLAT_PAD_X = 4, PLAT_PAD_TOP = 8;   // room for the caps' padding a
 // Ground and rooftop edge strip (assets/world/ground-rooftop/<palette>/ground-edge.webp). All five colours share
 // one layout: the walking surface (the rail's first opaque row), where the glow starts and where the metal ends.
 // The strip tiles seamlessly as supplied, except orange, whose last column is a black line; it's left out.
+export const EDGE_LIGHT = { height: 16, belowSurface: 3 };
 export const EDGE = {
   w: 2172, land: 300, top: 280, bottom: 555,
   cut: { orange: 1 },   // columns dropped from the right end
@@ -101,6 +102,8 @@ export function fitArt(scene) {
     for (const kind of ['ground', 'roof']) {
       const k = EDGE[kind] / (bottom - land);
       put(scene, `edge-${p}-${kind}`, resample(img, [0, top, w, bottom - top], Math.round(w * k), Math.round((bottom - top) * k)));
+      // Reuse the artwork's translucent top band at a readable height above the walking surface.
+      put(scene, `edge-light-${p}-${kind}`, resample(img, [0, top, w, land - top], Math.round(w * k), EDGE_LIGHT.height));
     }
     scene.textures.remove(`edge-${p}`);
   }

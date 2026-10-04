@@ -8,7 +8,7 @@ import { Player } from '../entities/Player.js';
 import { Enemy } from '../entities/Enemy.js';
 import { Fx } from '../gfx/fx.js';
 import { pitShaft, wallTrim, setAnchoredFrame } from '../gfx/textures.js';
-import { deckTexture, edgeMetrics, propOrigin, FLOAT_H, PLAT_PAD_X, PLAT_PAD_TOP, EGG_CORE_Y, GATE_H } from '../gfx/art.js';
+import { deckTexture, edgeMetrics, propOrigin, FLOAT_H, PLAT_PAD_X, PLAT_PAD_TOP, EGG_CORE_Y, GATE_H, EDGE_LIGHT } from '../gfx/art.js';
 import { hexNum } from '../gfx/draw.js';
 import { SFX, sfxTick, thruster } from '../audio/sfx.js';
 import { musicMode, musicSetLevel } from '../audio/music.js';
@@ -114,6 +114,10 @@ export class GameScene extends Phaser.Scene {
     const edge = (s, kind) => {
       const key = `edge-${pal}-${kind}`, m = edgeMetrics(this, pal, kind), th = this.textures.get(key).getSourceImage().height;
       this.add.tileSprite(s.x, s.y - m.land, s.w, th, key).setOrigin(0).setDepth(DEPTH.plat).setTilePosition(s.x % m.tileW, 0);   // world-aligned repeats
+      // A thin foreground wash lets the surface light catch Kin's feet.
+      this.add.tileSprite(s.x, s.y + EDGE_LIGHT.belowSurface - EDGE_LIGHT.height, s.w, EDGE_LIGHT.height, `edge-light-${pal}-${kind}`)
+        .setOrigin(0).setDepth(DEPTH.player + .1).setBlendMode(Phaser.BlendModes.ADD)
+        .setTilePosition(s.x % m.tileW, 0);
     };
     for (const s of L.solids) {
       const z = this.add.zone(s.x + s.w / 2, s.y + s.h / 2, s.w, s.h);
