@@ -57,6 +57,11 @@
    "name": "gate",
    "type": "string",
    "value": "green"
+  },
+  {
+   "name": "palette",
+   "type": "string",
+   "value": "green"
   }
  ],
  "layers": [

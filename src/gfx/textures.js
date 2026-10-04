@@ -1,7 +1,7 @@
 // Bakes every texture the game uses. Sprite-sheet frames are pre-scaled to world size (with their glow
 // baked in), and the neon props are drawn once with the same canvas code the original build drew per frame.
 import { FRAMES, SFR, DFR, DFR_FADE, SPR_SCALE, SH_SCALE, DR_SCALE, DASH_NOSE } from '../config.js';
-import { makeCanvas, rr, rgba, hexPath } from './draw.js';
+import { makeCanvas, rr, rgba } from './draw.js';
 
 // normalized origin for every baked frame: ANCHORS[textureKey][frameName] = [ox, oy]
 const ANCHORS = {};
@@ -135,33 +135,6 @@ export function bakeProps(scene) {
     ctx.beginPath(); ctx.moveTo(0, -r); ctx.lineTo(r, 0); ctx.lineTo(0, r); ctx.lineTo(-r, 0); ctx.closePath(); ctx.fill();
     ctx.fillStyle = '#e9fdff'; ctx.beginPath(); ctx.moveTo(0, -r * .45); ctx.lineTo(r * .45, 0); ctx.lineTo(0, r * .45); ctx.lineTo(-r * .45, 0); ctx.closePath(); ctx.fill();
   });
-  // jet fuel tank, anchored at its base (70x102, base at y=80)
-  bake(scene, 'tank', 70, 102, ctx => {
-    ctx.translate(35, 80); ctx.shadowColor = '#35e9ff'; ctx.shadowBlur = 18;
-    ctx.fillStyle = '#0e1a1f'; rr(ctx, -13, -52, 26, 52, 7); ctx.fill();
-    ctx.fillStyle = '#35e9ff'; ctx.fillRect(-13, -40, 26, 4); ctx.fillRect(-13, -22, 26, 4); rr(ctx, -5, -58, 10, 8, 3); ctx.fill();
-    ctx.fillStyle = 'rgba(53,233,255,.35)'; ctx.fillRect(-9, -48, 5, 42);
-    ctx.shadowBlur = 0; ctx.fillStyle = '#e9fdff'; ctx.font = 'bold 10px system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('JET', 0, -31);
-  });
-  // egg pod shell (glowing core is a separate image so it can pulse), base at y=80
-  bake(scene, 'egg', 80, 102, ctx => {
-    ctx.translate(40, 80);
-    ctx.shadowColor = '#35e9ff'; ctx.shadowBlur = 18;
-    ctx.fillStyle = '#1a0c14'; ctx.beginPath(); ctx.ellipse(0, -30, 18, 28, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.shadowColor = '#ff2d55'; ctx.shadowBlur = 18; ctx.strokeStyle = '#ff2d55'; ctx.lineWidth = 2;
-    ctx.beginPath(); ctx.moveTo(-14, -40); ctx.lineTo(-4, -28); ctx.lineTo(-10, -14); ctx.moveTo(6, -50); ctx.lineTo(12, -34); ctx.lineTo(4, -20); ctx.stroke();
-  });
-  bake(scene, 'egg-core', 48, 54, ctx => {
-    ctx.translate(24, 27); ctx.shadowColor = '#35e9ff'; ctx.shadowBlur = 16; ctx.fillStyle = '#35e9ff';
-    ctx.beginPath(); ctx.ellipse(0, 0, 6, 9, 0, 0, Math.PI * 2); ctx.fill();
-  });
-  // repair kit: a spare life core, centered
-  bake(scene, 'repair', 64, 64, ctx => {
-    ctx.translate(32, 32);
-    hexPath(ctx, 0, 0, 15); ctx.fillStyle = '#0b1420'; ctx.shadowColor = '#35e9ff'; ctx.shadowBlur = 16; ctx.fill();
-    ctx.lineWidth = 2; ctx.strokeStyle = '#35e9ff'; ctx.stroke();
-    ctx.shadowBlur = 8; ctx.fillStyle = '#e9fdff'; ctx.fillRect(-2.5, -8, 5, 16); ctx.fillRect(-8, -2.5, 16, 5);
-  });
   // enemy laser bolt, centered
   bake(scene, 'laser', 76, 38, ctx => {
     ctx.translate(38, 19); ctx.shadowColor = '#ff2d55'; ctx.shadowBlur = 14;
@@ -183,41 +156,10 @@ export function bakeProps(scene) {
 
 // ---------------------------------------------------------------- level-themed textures
 
-export const GTOP_H = 60, GTOP_PAD = 20;
-// Repeating 120px strip for the top of solid ground: bevel, neon edge and diagonal panel seams.
-export function groundTop(scene, color) {
-  return bake(scene, 'gtop' + color, 120, GTOP_PAD + GTOP_H, ctx => {
-    const y = GTOP_PAD;
-    ctx.fillStyle = '#0b0a10'; ctx.fillRect(0, y, 120, GTOP_H);
-    ctx.fillStyle = '#16121c'; ctx.fillRect(0, y, 120, 10);
-    ctx.fillStyle = color; ctx.shadowColor = color; ctx.shadowBlur = 14; ctx.fillRect(-20, y, 160, 3); ctx.shadowBlur = 0;
-    ctx.fillStyle = rgba(color, .25); ctx.fillRect(0, y + 3, 120, 6);
-    ctx.strokeStyle = rgba(color, .16); ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(120, y + 10); ctx.lineTo(106, y + 60); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(0, y + 10); ctx.lineTo(-14, y + 60); ctx.stroke();
-  });
-}
-
 // Neon trim for an exposed side of solid ground (repeats vertically). 16px wide, the line sits at x=7..9.
 export function wallTrim(scene, color) {
   return bake(scene, 'trim' + color, 16, 64, ctx => {
     ctx.shadowColor = color; ctx.shadowBlur = 8; ctx.fillStyle = rgba(color, .85); ctx.fillRect(7, -20, 2, 104);
-  });
-}
-
-export const FLOAT_H = 26, FLOAT_PAD = 16;
-export function floatPlat(scene, w, color, mover = false) {
-  w = Math.round(w);
-  return bake(scene, `float${w}${color}${mover ? 'm' : ''}`, w + FLOAT_PAD * 2, FLOAT_H + FLOAT_PAD * 2, ctx => {
-    ctx.translate(FLOAT_PAD, FLOAT_PAD);
-    ctx.fillStyle = '#0f0c15'; ctx.fillRect(0, 0, w, FLOAT_H);
-    ctx.fillStyle = color; ctx.shadowColor = color; ctx.shadowBlur = 12; ctx.fillRect(0, 0, w, 3); ctx.shadowBlur = 0;
-    ctx.fillStyle = rgba(color, .25); ctx.fillRect(6, FLOAT_H - 5, w - 12, 2);
-    ctx.fillStyle = rgba(color, .08); ctx.fillRect(0, 3, w, 8);
-    if (mover) { // thruster pods under each end
-      ctx.shadowColor = color; ctx.shadowBlur = 10; ctx.fillStyle = color;
-      for (const x of [14, w - 14]) { ctx.beginPath(); ctx.moveTo(x - 6, FLOAT_H); ctx.lineTo(x + 6, FLOAT_H); ctx.lineTo(x, FLOAT_H + 7); ctx.closePath(); ctx.fill(); }
-    }
   });
 }
 
@@ -236,7 +178,7 @@ export function pitShaft(scene, gw, height, floorOffset, color) {
   });
 }
 
-// Light for the exit gate's open middle (the gate itself is an image in assets/gates/). All white, tinted to
+// Light for the exit gate's open middle (the gate itself is an image in assets/exit-gates/). All white, tinted to
 // the level colour and drawn additively behind the frame, which hides their edges.
 function portalLight(scene) {
   // energy sheet: bright at the rims and a softer core, strongest towards the floor
@@ -265,18 +207,6 @@ function portalLight(scene) {
     const g = ctx.createLinearGradient(0, 0, 0, 32);
     g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(.5, 'rgba(255,255,255,.8)'); g.addColorStop(1, 'rgba(255,255,255,0)');
     ctx.fillStyle = g; ctx.fillRect(0, 0, 32, 32);
-  });
-}
-
-// Checkpoint beacon (inactive red / active cyan), base at bottom centre.
-export function beacon(scene, on) {
-  const color = on ? '#35e9ff' : '#ff2d55';
-  return bake(scene, on ? 'beacon-on' : 'beacon-off', 60, 150, ctx => {
-    ctx.translate(30, 136);
-    ctx.fillStyle = '#0f0c15'; ctx.fillRect(-4, -110, 8, 110); ctx.fillRect(-14, -6, 28, 6);
-    ctx.shadowColor = color; ctx.shadowBlur = on ? 22 : 10; ctx.fillStyle = color;
-    ctx.beginPath(); ctx.moveTo(0, -126); ctx.lineTo(10, -112); ctx.lineTo(0, -98); ctx.lineTo(-10, -112); ctx.closePath(); ctx.fill();
-    ctx.fillStyle = rgba(color, on ? .9 : .5); ctx.fillRect(-1, -96, 2, 90);
   });
 }
 
