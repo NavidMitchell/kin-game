@@ -49,10 +49,16 @@ function cleanFrame(img, [sx, sy, sw, sh], fade) {
     g.addColorStop(0, '#000'); g.addColorStop(1, 'rgba(0,0,0,0)');
     ctx.save(); ctx.globalCompositeOperation = 'destination-out'; ctx.fillStyle = g; ctx.fillRect(fx, fy, fw, fh); ctx.restore();
   }
+  dropEdgeFragments(ctx, sw, sh, 96);   // solid pieces of a neighbour
+  dropEdgeFragments(ctx, sw, sh, 24);   // faint glow from a neighbour
+  return cv;
+}
+
+function dropEdgeFragments(ctx, sw, sh, threshold) {
   const im = ctx.getImageData(0, 0, sw, sh), a = im.data, n = sw * sh;
   const label = new Int32Array(n), comps = [];
   for (let i = 0; i < n; i++) {
-    if (label[i] || a[i * 4 + 3] <= 96) continue;
+    if (label[i] || a[i * 4 + 3] <= threshold) continue;
     const id = comps.length + 1, stack = [i], pixels = [];
     let edge = false; label[i] = id;
     while (stack.length) {
@@ -60,19 +66,18 @@ function cleanFrame(img, [sx, sy, sw, sh], fade) {
       pixels.push(j);
       if (x === 0 || y === 0 || x === sw - 1 || y === sh - 1) edge = true;
       for (const k of [j - 1, j + 1, j - sw, j + sw]) {
-        if (k < 0 || k >= n || label[k] || a[k * 4 + 3] <= 96) continue;
+        if (k < 0 || k >= n || label[k] || a[k * 4 + 3] <= threshold) continue;
         if ((k === j - 1 && x === 0) || (k === j + 1 && x === sw - 1)) continue;
         label[k] = id; stack.push(k);
       }
     }
     comps.push({ pixels, edge });
   }
-  if (comps.length < 2) return cv;
+  if (comps.length < 2) return;
   const main = comps.reduce((m, c) => (c.pixels.length > m.pixels.length ? c : m));
   let changed = false;
   for (const c of comps) if (c !== main && c.edge) { for (const j of c.pixels) a[j * 4 + 3] = 0; changed = true; }
   if (changed) ctx.putImageData(im, 0, 0);
-  return cv;
 }
 
 export function bakeSprites(scene) {
@@ -83,7 +88,7 @@ export function bakeSprites(scene) {
   const kin = [];
   for (const [anim, rects] of Object.entries(FRAMES)) rects.forEach((rect, i) => kin.push({ name: anim + i, img: robot, rect, scale: SPR_SCALE, anchor: feet }));
   // shoot frames keep the body 41px left of the feet so the charge glow extends forward
-  for (const anim of ['charge', 'fire']) SFR[anim].forEach((rect, i) => kin.push({ name: anim + i, img: shoot, rect, scale: SH_SCALE, anchor: (dw, dh) => [41, dh] }));
+  for (const anim of ['charge', 'fire']) SFR[anim].forEach(([x, y, w, h, bodyX], i) => kin.push({ name: anim + i, img: shoot, rect: [x, y, w, h], scale: SH_SCALE, anchor: (dw, dh) => [(bodyX - x) * SH_SCALE, dh] }));
   bakeAtlas(scene, 'kin', kin, { pad: 2 });
 
   const drones = [], shootBodyX = DFR.shoot[0][2] * DR_SCALE / 2;

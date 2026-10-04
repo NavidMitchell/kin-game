@@ -33,10 +33,16 @@ export class Enemy {
       if (!this.fired && this.shootT >= SHOOT_FIRE) { this.fired = true; this.scene.fireLaser(this.x + this.face * 34, ey + this.h * .55, this.face); }
       if (this.shootT >= SHOOT_TIME) this.shootT = 0;
     } else {
-      this.x += this.vx * dt;
-      if (this.x < this.minX) { this.x = this.minX; this.vx = Math.abs(this.vx); }
-      if (this.x > this.maxX) { this.x = this.maxX; this.vx = -Math.abs(this.vx); }
-      this.face = this.vx < 0 ? -1 : 1;
+      if (this.maxX - this.minX < 2) {
+        // stationary (range 0): hold position and keep an eye on the player. Patrolling a zero-width
+        // range would bounce and flip direction every frame, which reads as facing both ways at once.
+        if (Math.abs(player.x - this.x) > 8) this.face = player.x < this.x ? -1 : 1;
+      } else {
+        this.x += this.vx * dt;
+        if (this.x < this.minX) { this.x = this.minX; this.vx = Math.abs(this.vx); }
+        if (this.x > this.maxX) { this.x = this.maxX; this.vx = -Math.abs(this.vx); }
+        this.face = this.vx < 0 ? -1 : 1;
+      }
       this.cool -= dt;
       if (this.type === 'drone' && this.cool <= 0 && onScreen && !player.frozen) {
         const dx = player.x - this.x, dy = (player.y - 50) - (ey + this.h * .5);

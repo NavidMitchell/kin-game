@@ -30,9 +30,11 @@ export const DASH_NOSE = 158;   // dash frames: body centre sits this many sheet
 export const DR_SCALE = 0.26, SHOOT_TIME = 0.7, SHOOT_FIRE = 0.38, LASER_SPEED = 560;
 
 // Player energy-shot sheet (faces right): charge, fire, projectile
+// charge/fire entries are [x, y, w, h, bodyX]: bodyX is the sheet x that sits 41 world px behind the feet.
+// Rectangles were re-measured to include the faint glow; the old ones cut it off or caught the neighbour's.
 export const SFR = {
-  charge: [[29,23,127,169],[207,25,143,167],[383,27,196,167],[595,26,205,168],[800,25,220,170],[1038,26,197,170],[1259,23,205,174]],
-  fire:   [[7,224,183,165],[190,230,210,165],[400,230,210,165],[610,233,371,163]],
+  charge: [[29,23,127,169,95],[207,25,143,167,273],[383,27,196,167,449],[596,26,214,168,661],[823,25,197,170,866],[1039,26,195,170,1104],[1259,23,205,174,1325]],
+  fire:   [[7,224,187,165,73],[200,230,211,165,256],[411,230,210,165,466],[621,233,358,163,676]],
   proj:   [[1014,276,183,90],[1237,289,140,67],[1405,301,85,49]],
 };
 export const SH_SCALE = 0.62, ATK_TIME = 0.42, ATK_FIRE = 0.28, SHOT_SPEED = 780;
