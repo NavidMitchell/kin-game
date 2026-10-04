@@ -8,7 +8,7 @@ import { Player } from '../entities/Player.js';
 import { Enemy } from '../entities/Enemy.js';
 import { Fx } from '../gfx/fx.js';
 import { pitShaft, wallTrim, setAnchoredFrame } from '../gfx/textures.js';
-import { deckTexture, edgeMetrics, propOrigin, FLOAT_H, PLAT_PAD_X, PLAT_PAD_TOP, EGG_CORE_Y, GATE_H, EDGE_LIGHT } from '../gfx/art.js';
+import { thrusterPorts, deckTexture, edgeMetrics, propOrigin, FLOAT_H, PLAT_PAD_X, PLAT_PAD_TOP, EGG_CORE_Y, GATE_H, EDGE_LIGHT } from '../gfx/art.js';
 import { hexNum } from '../gfx/draw.js';
 import { SFX, sfxTick, thruster } from '../audio/sfx.js';
 import { musicMode, musicSetLevel } from '../audio/music.js';
@@ -195,6 +195,8 @@ export class GameScene extends Phaser.Scene {
       oneWay(img.body);
       img.plat = { mover: img };
       img.def = m;
+      img.exhaustT = Math.random() * .05;
+      img.nozzles = thrusterPorts(m.w);
       this.movers.push(img);
     }
     this.moverT = 0;
@@ -446,6 +448,18 @@ export class GameScene extends Phaser.Scene {
     this.updateLasers(dt, cam);
     this.updatePickups(dt);
     this.fx.updateCoolingVents(dt, this.cameras.main.worldView);
+    for (const lift of this.movers) {
+      lift.exhaustT -= dt;
+      if (lift.exhaustT > 0) continue;
+      lift.exhaustT = .05;
+      const view = cam.worldView;
+      for (const port of lift.nozzles) {
+        const x = lift.body.x + port.x, y = lift.body.y + port.y;
+        if (x >= view.x - 40 && x <= view.right + 40 && y >= view.y - 70 && y <= view.bottom + 20) {
+          this.fx.platformExhaust(x, y);
+        }
+      }
+    }
     if (this.mode !== 'play') return;
 
     // checkpoints

@@ -6,6 +6,19 @@ export class Fx {
   constructor(scene) {
     this.scene = scene;
     this.bursts = new Map();
+    this.platformPlume = scene.add.particles(0, 0, 'puff', {
+      emitting: false, lifespan: { min: 240, max: 430 },
+      speedX: { min: -9, max: 9 }, speedY: { min: 65, max: 110 },
+      scale: { start: .13, end: .48 },
+      alpha: { onEmit: () => 0, onUpdate: (p, k, t) => Math.sin(t * Math.PI) * .32 },
+      tint: hexNum(scene.color), blendMode: 'ADD', maxParticles: 160,
+    }).setDepth(DEPTH.plat - .1);
+    this.platformSparks = scene.add.particles(0, 0, 'glow', {
+      emitting: false, lifespan: { min: 180, max: 350 },
+      speedX: { min: -12, max: 12 }, speedY: { min: 100, max: 160 },
+      scale: { start: .07, end: 0 }, alpha: { start: .6, end: 0 },
+      tint: [hexNum(scene.color), 0xe9fdff], blendMode: 'ADD', maxParticles: 100,
+    }).setDepth(DEPTH.plat - .1);
     this.ventSources = [];
     this.ventSteam = scene.add.particles(0, 0, 'puff', {
       emitting: false, lifespan: { min: 1000, max: 1700 },
@@ -23,6 +36,11 @@ export class Fx {
       tint: [0x35e9ff, 0x72eaff, 0xaff6ff], blendMode: 'ADD',
       maxParticles: 300,
     }).setDepth(DEPTH.pickup - .1);
+  }
+
+  platformExhaust(x, y) {
+    this.platformPlume.emitParticleAt(x + (Math.random() - .5) * 4, y, 1);
+    if (Math.random() < .4) this.platformSparks.emitParticleAt(x, y + 3, 1);
   }
 
   addCoolingVent(x, y) {

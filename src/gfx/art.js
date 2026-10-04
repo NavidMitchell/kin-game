@@ -128,6 +128,13 @@ export function edgeMetrics(scene, palette, kind) {
 // Texture for one ledge or lift w world px wide: left cap, complete middles, a split partial middle in the
 // centre, right cap; lifts also get a thruster pod under each end. The collider's top-left corner sits at
 // (PLAT_PAD_X, PLAT_PAD_TOP) in the texture.
+// Nozzle positions relative to the platform collider, shared with the exhaust.
+export function thrusterPorts(w) {
+  const k = Math.min(DECK.scale, (w / 2 - 4) / DECK.thrusterW);
+  const inset = DECK.thrusterW * k / 2 + 2;
+  return [inset, w - inset].map(x => ({ x, y: DECK.thrusterTop + 120 * k }));
+}
+
 export function deckTexture(scene, w, palette, mover = false) {
   w = Math.round(w);
   const key = `deck-${palette}-${w}${mover ? '-lift' : ''}`;
