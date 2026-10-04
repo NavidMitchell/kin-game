@@ -137,7 +137,7 @@ export function wallTrim(scene, color) {
   });
 }
 
-// Light shaft rising out of a pit (beam + hot core + lit walls). top/bottom are world y.
+// Soft light rising out of a pit. Solid blocks draw their own edge trim.
 export function pitShaft(scene, gw, height, floorOffset, color) {
   gw = Math.round(gw); height = Math.round(height);
   return bake(scene, `shaft${gw}x${height}x${floorOffset}${color}`, gw + 24, height, ctx => {
@@ -147,8 +147,15 @@ export function pitShaft(scene, gw, height, floorOffset, color) {
     ctx.fillStyle = g; ctx.fillRect(0, 0, gw, height);
     g = ctx.createLinearGradient(0, floorOffset, 0, height); g.addColorStop(0, 'rgba(220,250,255,0)'); g.addColorStop(1, 'rgba(220,250,255,.45)');
     ctx.fillStyle = g; ctx.fillRect(gw * .15, floorOffset, gw * .7, height - floorOffset);
-    ctx.shadowColor = color; ctx.shadowBlur = 18; ctx.fillStyle = rgba(color, .9);
-    ctx.fillRect(-1, floorOffset, 3, height - floorOffset); ctx.fillRect(gw - 2, floorOffset, 3, height - floorOffset);
+    // No independent wall lines: unequal pit rims otherwise draw neon into open air.
+    // Fade the beam sideways so its rectangular bounds are not visible either.
+    ctx.globalCompositeOperation = 'destination-in';
+    const sides = ctx.createLinearGradient(0, 0, gw, 0);
+    sides.addColorStop(0, 'rgba(255,255,255,0)');
+    sides.addColorStop(.2, 'rgba(255,255,255,1)');
+    sides.addColorStop(.8, 'rgba(255,255,255,1)');
+    sides.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = sides; ctx.fillRect(-12, 0, gw + 24, height);
   });
 }
 
