@@ -1,12 +1,12 @@
 {
   "image": "kin.webp",
   "width": 3072,
-  "height": 3744,
+  "height": 4032,
   "frameWidth": 384,
   "frameHeight": 288,
   "columns": 8,
-  "rows": 13,
-  "frameCount": 104,
+  "rows": 14,
+  "frameCount": 112,
   "margin": 0,
   "spacing": 0,
   "anchorPixels": [
@@ -110,6 +110,13 @@
       "frameCount": 6,
       "start": 96,
       "end": 101
+    },
+    {
+      "row": 13,
+      "state": "jet_thrust_fire",
+      "frameCount": 4,
+      "start": 104,
+      "end": 107
     }
   ],
   "animations": {
@@ -201,6 +208,36 @@
       "start": 96,
       "end": 101,
       "frameRate": 12,
+      "repeat": -1
+    },
+    "jet_thrust_fire": {
+      "start": 104,
+      "end": 107,
+      "frameRate": 20,
+      "repeat": 0
+    },
+    "charge_build": {
+      "start": 32,
+      "end": 36,
+      "frameRate": 12,
+      "repeat": 0
+    },
+    "charge_hold": {
+      "start": 37,
+      "end": 38,
+      "frameRate": 8,
+      "repeat": -1
+    },
+    "jet_charge_build": {
+      "start": 80,
+      "end": 84,
+      "frameRate": 12,
+      "repeat": 0
+    },
+    "jet_charge_hold": {
+      "start": 85,
+      "end": 86,
+      "frameRate": 8,
       "repeat": -1
     }
   },
