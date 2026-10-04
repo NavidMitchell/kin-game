@@ -6,7 +6,7 @@ import { findPits } from '../levels/parse.js';
 import { Player } from '../entities/Player.js';
 import { Enemy } from '../entities/Enemy.js';
 import { Fx } from '../gfx/fx.js';
-import { groundTop, floatPlat, pitShaft, exitGate, beacon, setAnchoredFrame, GTOP_H, GTOP_PAD, FLOAT_H, FLOAT_PAD } from '../gfx/textures.js';
+import { groundTop, floatPlat, pitShaft, exitGate, beacon, facade, wallTrim, setAnchoredFrame, GTOP_H, GTOP_PAD, FLOAT_H, FLOAT_PAD, FACADE } from '../gfx/textures.js';
 import { hexNum } from '../gfx/draw.js';
 import { SFX, sfxTick, thruster } from '../audio/sfx.js';
 import { musicMode, musicSetLevel } from '../audio/music.js';
@@ -101,7 +101,18 @@ export class GameScene extends Phaser.Scene {
       this.solidGroup.add(z);
       const topH = Math.min(GTOP_H, s.h);
       this.add.tileSprite(s.x, s.y - GTOP_PAD, s.w, topH + GTOP_PAD, groundTop(this, c)).setOrigin(0).setDepth(DEPTH.plat).setTilePosition(s.x % 120, 0);
-      if (s.h > GTOP_H) this.add.rectangle(s.x, s.y + GTOP_H, s.w, s.h - GTOP_H, 0x0b0a10).setOrigin(0).setDepth(DEPTH.plat);
+      if (s.h > GTOP_H) {
+        const fy = s.y + GTOP_H;
+        this.add.tileSprite(s.x, fy, s.w, s.h - GTOP_H, facade(this, c)).setOrigin(0).setDepth(DEPTH.plat).setTilePosition(s.x % FACADE, fy % FACADE);
+      }
+      // neon trim down any side that faces open air
+      for (const side of [-1, 1]) {
+        const edge = side < 0 ? s.x : s.x + s.w;
+        if (edge <= 0 || edge >= L.width) continue;
+        const touching = L.solids.filter(o => o !== s && Math.abs((side < 0 ? o.x + o.w : o.x) - edge) < 2 && o.y < s.y + s.h && o.y + o.h > s.y);
+        const bottom = Math.min(s.y + s.h, ...touching.map(o => o.y));
+        if (bottom - s.y > 8) this.add.tileSprite(edge - 8, s.y + 3, 16, bottom - s.y - 3, wallTrim(this, c)).setOrigin(0).setDepth(DEPTH.plat);
+      }
       if (s.y + s.h < L.height - 1) {   // floating block: outline its sides and underside
         this.add.rectangle(s.x, s.y, s.w, s.h).setOrigin(0).setStrokeStyle(1.5, hexNum(c), .35).setDepth(DEPTH.plat);
         this.add.rectangle(s.x + 6, s.y + s.h - 4, s.w - 12, 2, hexNum(c), .3).setOrigin(0).setDepth(DEPTH.plat);
