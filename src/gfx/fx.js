@@ -33,11 +33,11 @@ export class Fx {
   createChipPlasma(x, y) {
     // Emitter-local particles inherit the chip's bob, including already-live wisps.
     return this.scene.add.particles(x, y, 'puff', {
-      emitting: false, lifespan: { min: 600, max: 1000 },
+      emitting: false, lifespan: { min: 300, max: 500 },
       speedX: { min: -3, max: 3 }, speedY: { min: -4, max: 1 },
-      scale: { start: .2, end: .55 },
-      alpha: { onEmit: () => 0, onUpdate: (p, k, t) => Math.sin(t * Math.PI) * .34 },
-      tint: [0x35e9ff, 0x8bf3ff], blendMode: 'ADD', maxParticles: 28,
+      scale: { start: .1, end: .25 },
+      alpha: { onEmit: () => 0, onUpdate: (p, k, t) => Math.sin(t * Math.PI) * .18 },
+      tint: [0x35e9ff, 0x8bf3ff], blendMode: 'ADD', maxParticles: 6,
     }).setDepth(DEPTH.pickup + .1);
   }
 
@@ -49,12 +49,10 @@ export class Fx {
     const view = this.scene.cameras.main.worldView;
     if (pickup.plasmaT > 0 || pickup.img.x < view.x - 40 || pickup.img.x > view.right + 40
       || y < view.y - 40 || y > view.bottom + 40) return;
-    pickup.plasmaT = .08;
+    pickup.plasmaT = .12;
     // Wisps emerge along the edges, not in an orbit or a detached background halo.
-    for (const side of [-1, 1]) {
-      emitter.emitParticleAt(side * width * (.3 + Math.random() * .2),
-        (Math.random() - .5) * 20, 1);
-    }
+    const side = Math.random() < .5 ? -1 : 1;
+    emitter.emitParticleAt(side * width * .55, (Math.random() - .5) * 16, 1);
   }
 
   platformExhaust(x, y) {
