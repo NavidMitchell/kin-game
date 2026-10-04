@@ -12,7 +12,7 @@ export class Enemy {
     Object.assign(this, {
       scene, type, x, y, w: 70, h: 44, face: d, vx: d * (type === 'drone' ? 90 : 130),
       minX: x - range, maxX: x + range, alive: true, t: Math.random() * 6, dieT: 0, shootT: 0, cool: rnd(1, 3),
-      warned: false, fired: false, gone: false,
+      warned: false, fired: false, gone: false, lookT: rnd(.5, 2),
     });
     this.sprite = scene.add.sprite(x, y, 'drone', 'hover0').setDepth(DEPTH.enemy);
     this.render();
@@ -34,9 +34,10 @@ export class Enemy {
       if (this.shootT >= SHOOT_TIME) this.shootT = 0;
     } else {
       if (this.maxX - this.minX < 2) {
-        // stationary (range 0): hold position and keep an eye on the player. Patrolling a zero-width
-        // range would bounce and flip direction every frame, which reads as facing both ways at once.
-        if (Math.abs(player.x - this.x) > 8) this.face = player.x < this.x ? -1 : 1;
+        // stationary (range 0): hold position and scan back and forth, as if searching for the player.
+        // (Patrolling a zero-width range would flip direction every frame instead.)
+        this.lookT -= dt;
+        if (this.lookT <= 0) { this.face = -this.face; this.lookT = rnd(1.2, 2.2); }
       } else {
         this.x += this.vx * dt;
         if (this.x < this.minX) { this.x = this.minX; this.vx = Math.abs(this.vx); }
