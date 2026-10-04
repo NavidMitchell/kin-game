@@ -24,12 +24,12 @@ export const FLOAT_H = 26;      // collider thickness of ledges and lifts (uncha
 // Platform textures are drawn at 1 texture px = 1 world px so the physics offsets below stay exact.
 export const PLAT_PAD_X = 4, PLAT_PAD_TOP = 8;   // room for the caps' padding and the glow above the rail
 
-// Ground and rooftop edge strip (assets/world/ground-rooftop/<palette>/ground-edge.webp). The whole 2172px
-// strip tiles seamlessly as supplied (checked at game scale). Per palette: the walking-surface row (the rail's
-// first opaque row), and the rows where its glow starts and its metal ends.
+// Ground and rooftop edge strip (assets/world/ground-rooftop/<palette>/ground-edge.webp). All five colours share
+// one layout: the walking surface (the rail's first opaque row), where the glow starts and where the metal ends.
+// The strip tiles seamlessly as supplied, except orange, whose last column is a black line; it's left out.
 export const EDGE = {
-  w: 2172,
-  rows: { cyan: [289, 283, 554], magenta: [306, 285, 554], orange: [310, 280, 554], green: [277, 271, 528], red: [307, 288, 550] },
+  w: 2172, land: 300, top: 280, bottom: 555,
+  cut: { orange: 1 },   // columns dropped from the right end
   ground: 30,   // world px from the walking surface to the bottom of the strip on plain ground
   roof: 20,     // thinner on tower roofs, so it covers the roof edge and first ledge but no windows
 };
@@ -97,10 +97,10 @@ export function fitArt(scene) {
     }
     // ground edge: one texture for plain ground and a thinner one for tower roofs, both cut from the glow's
     // top to the strip's bottom so the walking surface sits at a known row
-    const [land, top, bottom] = EDGE.rows[p], img = source(scene, `edge-${p}`);
+    const { land, top, bottom } = EDGE, w = EDGE.w - (EDGE.cut[p] || 0), img = source(scene, `edge-${p}`);
     for (const kind of ['ground', 'roof']) {
       const k = EDGE[kind] / (bottom - land);
-      put(scene, `edge-${p}-${kind}`, resample(img, [0, top, EDGE.w, bottom - top], Math.round(EDGE.w * k), Math.round((bottom - top) * k)));
+      put(scene, `edge-${p}-${kind}`, resample(img, [0, top, w, bottom - top], Math.round(w * k), Math.round((bottom - top) * k)));
     }
     scene.textures.remove(`edge-${p}`);
   }
@@ -108,7 +108,7 @@ export function fitArt(scene) {
 
 // where the walking surface sits in an edge texture (texture px from its top), and its tile width
 export function edgeMetrics(scene, palette, kind) {
-  const [land, top, bottom] = EDGE.rows[palette], k = EDGE[kind] / (bottom - land);
+  const { land, top, bottom } = EDGE, k = EDGE[kind] / (bottom - land);
   return { land: (land - top) * k, tileW: scene.textures.get(`edge-${palette}-${kind}`).getSourceImage().width };
 }
 
