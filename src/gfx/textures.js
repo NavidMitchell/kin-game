@@ -115,6 +115,13 @@ function bake(scene, key, w, h, draw) {
 
 export function bakeProps(scene) {
   bake(scene, 'px', 4, 4, ctx => { ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, 4, 4); });
+  // soft white glow, tinted where it's used
+  bake(scene, 'glow', 64, 64, ctx => {
+    const r = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+    r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(.45, 'rgba(255,255,255,.35)'); r.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = r; ctx.fillRect(0, 0, 64, 64);
+  });
+  portalLight(scene);
   // soft puff sprite for steam
   bake(scene, 'puff', 64, 64, ctx => {
     const r = ctx.createRadialGradient(32, 32, 2, 32, 32, 32);
@@ -229,24 +236,35 @@ export function pitShaft(scene, gw, height, floorOffset, color) {
   });
 }
 
-// Exit gate: two pylons and a lintel (energy field is a separate additive image). Base at bottom centre.
-export function exitGate(scene, color) {
-  bake(scene, 'gate-field' + color, 120, 170, ctx => {
-    const g = ctx.createLinearGradient(0, 0, 120, 0);
-    g.addColorStop(0, rgba(color, 0)); g.addColorStop(.25, rgba(color, .35)); g.addColorStop(.5, 'rgba(255,255,255,.55)'); g.addColorStop(.75, rgba(color, .35)); g.addColorStop(1, rgba(color, 0));
-    ctx.fillStyle = g; ctx.fillRect(0, 0, 120, 170);
-    for (let y = 4; y < 170; y += 12) { ctx.fillStyle = 'rgba(255,255,255,.12)'; ctx.fillRect(10, y, 100, 2); }
+// Light for the exit gate's open middle (the gate itself is an image in assets/gates/). All white, tinted to
+// the level colour and drawn additively behind the frame, which hides their edges.
+function portalLight(scene) {
+  // energy sheet: bright at the rims and a softer core, strongest towards the floor
+  bake(scene, 'portal-field', 64, 256, ctx => {
+    const g = ctx.createLinearGradient(0, 0, 64, 0);
+    g.addColorStop(0, 'rgba(255,255,255,.75)'); g.addColorStop(.18, 'rgba(255,255,255,.16)'); g.addColorStop(.5, 'rgba(255,255,255,.3)');
+    g.addColorStop(.82, 'rgba(255,255,255,.16)'); g.addColorStop(1, 'rgba(255,255,255,.75)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, 64, 256);
+    ctx.globalCompositeOperation = 'destination-in';
+    const v = ctx.createLinearGradient(0, 0, 0, 256);
+    v.addColorStop(0, 'rgba(0,0,0,.5)'); v.addColorStop(.6, 'rgba(0,0,0,.75)'); v.addColorStop(1, 'rgba(0,0,0,1)');
+    ctx.fillStyle = v; ctx.fillRect(0, 0, 64, 256);
   });
-  return bake(scene, 'gate' + color, 200, 230, ctx => {
-    ctx.translate(100, 210);
-    ctx.shadowColor = color; ctx.shadowBlur = 18;
-    ctx.fillStyle = '#0f0c15';
-    ctx.fillRect(-78, -190, 18, 190); ctx.fillRect(60, -190, 18, 190); ctx.fillRect(-84, -204, 168, 20);
-    ctx.fillStyle = color;
-    ctx.fillRect(-62, -186, 3, 186); ctx.fillRect(59, -186, 3, 186); ctx.fillRect(-84, -186, 168, 3);
-    for (let y = -170; y < -10; y += 26) { ctx.fillRect(-74, y, 10, 3); ctx.fillRect(64, y, 10, 3); }
-    ctx.shadowBlur = 0; ctx.fillStyle = '#e9fdff'; ctx.font = '700 13px Rajdhani, system-ui'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('E X I T', 0, -194);
+  // scan lines, tiled and scrolled upwards
+  bake(scene, 'portal-scan', 16, 24, ctx => {
+    ctx.fillStyle = 'rgba(255,255,255,.5)'; ctx.fillRect(0, 0, 16, 2);
+    ctx.fillStyle = 'rgba(255,255,255,.22)'; ctx.fillRect(0, 12, 16, 1);
+  });
+  // ripple ring, stretched to the doorway's shape
+  bake(scene, 'portal-ring', 128, 128, ctx => {
+    ctx.shadowColor = '#fff'; ctx.shadowBlur = 10; ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(64, 64, 52, 0, Math.PI * 2); ctx.stroke();
+  });
+  // soft horizontal band that sweeps down the doorway
+  bake(scene, 'portal-band', 32, 32, ctx => {
+    const g = ctx.createLinearGradient(0, 0, 0, 32);
+    g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(.5, 'rgba(255,255,255,.8)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, 32, 32);
   });
 }
 

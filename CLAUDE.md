@@ -27,7 +27,7 @@ Code-drawn visuals are still right for things that are genuinely procedural or d
 - neon edge lines whose length or colour comes from level data
 - debug overlays
 
-Existing hand-drawn art that would be better as assets, to convert when it's next worked on: platform tops and ledges, the jet tank, the egg pod, the repair kit, the exit gate, the checkpoint beacon and the data chip (all in `src/gfx/textures.js`).
+Existing hand-drawn art that would be better as assets, to convert when it's next worked on: platform tops and ledges, the jet tank, the egg pod, the repair kit, the checkpoint beacon and the data chip (all in `src/gfx/textures.js`).
 
 Sound effects and music are synthesised in code on purpose (`src/audio/`). Ask before replacing them with audio files.
 

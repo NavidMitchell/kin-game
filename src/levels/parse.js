@@ -14,6 +14,7 @@
 //     repair            restores one life core
 //     hint              text (shown in the world)
 // Map properties: name, subtitle, color, bgTint, bgHue (degrees), wall (optional tower art: red | magenta | orange | green; none = plain ground),
+//                 gate (exit gate art: cyan | magenta | orange | green | red-blue),
 //                 bpm, transpose, par (seconds)
 
 const props = o => Object.fromEntries((o.properties || []).map(p => [p.name, p.value]));
@@ -27,7 +28,7 @@ export function parseLevel(map, index) {
     index, id: index + 1,
     name: mp.name || `Level ${index + 1}`, subtitle: mp.subtitle || '',
     color: color(mp.color, '#35e9ff'), bgTint: color(mp.bgTint, '#ffffff'),
-    bgHue: mp.bgHue || 0, wall: mp.wall || null, bpm: mp.bpm || 144, transpose: mp.transpose || 0, par: mp.par || 120,
+    bgHue: mp.bgHue || 0, wall: mp.wall || null, gate: mp.gate || 'cyan', bpm: mp.bpm || 144, transpose: mp.transpose || 0, par: mp.par || 120,
     width: map.width * map.tilewidth, height: map.height * map.tileheight,
     solids: [], floats: [], movers: [],
     start: null, exit: null, checkpoints: [],

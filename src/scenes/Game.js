@@ -6,7 +6,7 @@ import { findPits } from '../levels/parse.js';
 import { Player } from '../entities/Player.js';
 import { Enemy } from '../entities/Enemy.js';
 import { Fx } from '../gfx/fx.js';
-import { groundTop, floatPlat, pitShaft, exitGate, beacon, wallTrim, setAnchoredFrame, GTOP_H, GTOP_PAD, FLOAT_H, FLOAT_PAD } from '../gfx/textures.js';
+import { groundTop, floatPlat, pitShaft, beacon, wallTrim, setAnchoredFrame, GTOP_H, GTOP_PAD, FLOAT_H, FLOAT_PAD } from '../gfx/textures.js';
 import { hexNum } from '../gfx/draw.js';
 import { SFX, sfxTick, thruster } from '../audio/sfx.js';
 import { musicMode, musicSetLevel } from '../audio/music.js';
@@ -21,6 +21,10 @@ const BOOST_RESPAWN = 5;
 const WALL_SCALE = 0.5;
 const TOWER = { storey: 1254 / 8, ledge: 25, firstLedge: 141 };
 const ROOF_H = 10;   // neon roof edge above the first ledge
+// assets/gates/*.webp: the exit gate, drawn GATE.h world px tall. Measured in the art as fractions of the image,
+// so a replacement at any resolution still fits: where the base meets the ground, and the open middle
+// (including the frame's inner glow) where the portal light goes.
+const GATE = { h: 340, ground: .942, open: { x0: .305, x1: .705, y0: .155, y1: .905 } };
 
 export class GameScene extends Phaser.Scene {
   constructor() { super('Game'); }
@@ -183,18 +187,58 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
+  // Exit gate: the frame is an image; its open middle gets a portal of light behind it, which the frame masks.
+  buildExit() {
+    const L = this.level, ex = L.exit, col = hexNum(this.color), ADD = Phaser.BlendModes.ADD, d = DEPTH.deco;
+    const key = this.textures.exists('gate-' + L.gate) ? 'gate-' + L.gate : 'gate-cyan';
+    const img = this.textures.get(key).getSourceImage(), sc = GATE.h / img.height, gw = img.width * sc, op = GATE.open;
+    const o = { x: ex.x + (op.x0 - .5) * gw, y: ex.y + (op.y0 - GATE.ground) * GATE.h, w: (op.x1 - op.x0) * gw, h: (op.y1 - op.y0) * GATE.h };
+    const cx = o.x + o.w / 2, cy = o.y + o.h / 2;
+    const field = this.add.image(cx, cy, 'portal-field').setDisplaySize(o.w, o.h).setTint(col).setBlendMode(ADD).setDepth(d);
+    const scan = this.add.tileSprite(o.x, o.y, o.w, o.h, 'portal-scan').setOrigin(0).setTint(col).setBlendMode(ADD).setDepth(d).setAlpha(.45);
+    const core = this.add.image(cx, cy + o.h * .1, 'glow').setDisplaySize(o.w * 1.3, o.h).setBlendMode(ADD).setDepth(d).setAlpha(.15);
+    this.add.image(cx, o.y + o.h, 'glow').setDisplaySize(o.w * 1.8, 34).setTint(col).setBlendMode(ADD).setDepth(d).setAlpha(.9);
+    // ripples open out from the middle, one after another
+    const rx = o.w * 1.15 / 128, ry = o.h * .8 / 128;
+    const rings = [0, 1, 2].map(i => {
+      const r = this.add.image(cx, cy, 'portal-ring').setTint(col).setBlendMode(ADD).setDepth(d).setAlpha(0);
+      this.tweens.add({ targets: r, scaleX: { from: rx * .08, to: rx }, scaleY: { from: ry * .08, to: ry }, alpha: { from: .9, to: 0 },
+        duration: 2100, delay: i * 700, repeat: -1, ease: 'Cubic.out' });
+      return r;
+    });
+    // a bright band sweeps down every few seconds
+    const band = this.add.image(cx, o.y, 'portal-band').setDisplaySize(o.w, 36).setTint(col).setBlendMode(ADD).setDepth(d).setAlpha(0);
+    this.tweens.add({ targets: band, y: { from: o.y, to: o.y + o.h }, duration: 1300, repeat: -1, repeatDelay: 1700,
+      ease: 'Sine.inOut', onUpdate: tw => band.setAlpha(Math.sin(tw.progress * Math.PI) * .8) });
+    // motes drifting up, and quick data streaks
+    const zone = { type: 'random', source: new Phaser.Geom.Rectangle(4, 10, o.w - 8, o.h - 14) };
+    this.add.particles(o.x, o.y, 'px', {
+      emitZone: zone, speedY: { min: -90, max: -25 }, speedX: { min: -8, max: 8 }, lifespan: 1600, frequency: 55,
+      scale: { min: .35, max: .9 }, tint: [col, 0xffffff], alpha: { start: .9, end: 0 }, blendMode: 'ADD',
+    }).setDepth(d);
+    this.add.particles(o.x, o.y, 'px', {
+      emitZone: zone, speedY: { min: -280, max: -160 }, lifespan: 700, frequency: 180,
+      scaleX: .3, scaleY: { min: 3, max: 7 }, tint: [col, 0xffffff], alpha: { start: .7, end: 0 }, blendMode: 'ADD',
+    }).setDepth(d);
+    // the frame goes on top so it hides the light's edges
+    this.add.image(ex.x, ex.y, key).setOrigin(.5, GATE.ground).setScale(sc).setDepth(d);
+    this.exitZone = { x: o.x + 4, y: o.y, w: o.w - 8, h: ex.y + 10 - o.y };
+    this.gate = { field, scan, core, rings, x: cx, y: cy, surge: 0 };
+  }
+
+  // the portal brightens as Kin gets close, and surges when he steps through
+  updateGate(dt, time) {
+    const g = this.gate, p = this.player;
+    const k = Phaser.Math.Clamp(1 - (Phaser.Math.Distance.Between(p.x, p.y - 50, g.x, g.y) - 80) / 420, 0, 1);
+    const pulse = .5 + .5 * Math.sin(time / 260);
+    g.scan.tilePositionY += dt * (30 + 60 * k + 200 * g.surge);
+    g.field.setAlpha(Math.min(1, .6 + .15 * pulse + .25 * k + g.surge));
+    g.core.setAlpha(Math.min(1, .1 + .06 * pulse + .35 * k + .9 * g.surge));
+  }
+
   buildProps() {
     const L = this.level, c = this.color;
-    // exit gate
-    const ex = L.exit;
-    this.add.image(ex.x, ex.y, exitGate(this, c)).setOrigin(.5, 210 / 230).setDepth(DEPTH.deco);
-    const field = this.add.image(ex.x, ex.y, 'gate-field' + c).setOrigin(.5, 1).setDepth(DEPTH.deco).setBlendMode(Phaser.BlendModes.ADD);
-    this.tweens.add({ targets: field, alpha: { from: .55, to: 1 }, duration: 700, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
-    this.add.particles(ex.x, ex.y, 'px', {
-      x: { min: -50, max: 50 }, speedY: { min: -120, max: -60 }, lifespan: 1600, frequency: 60, scale: { min: .5, max: 1 },
-      tint: [hexNum(c), 0xffffff], alpha: { start: .9, end: 0 },
-    }).setDepth(DEPTH.deco);
-    this.exitZone = { x: ex.x - 46, y: ex.y - 190, w: 92, h: 200 };
+    this.buildExit();
 
     // checkpoints
     this.beacons = L.checkpoints.map((cp, i) => {
@@ -295,7 +339,8 @@ export class GameScene extends Phaser.Scene {
     p.frozen = true; p.loseJet(); thruster(0);
     SFX.warp();
     this.tweens.add({ targets: [p.sprite, p.pack], alpha: 0, scaleY: 1.6, duration: 650, ease: 'Cubic.in', onComplete: () => { p.hidden = true; } });
-    this.fx.puff(L.exit.x, L.exit.y - 60, 30, this.color, 320); this.fx.puff(L.exit.x, L.exit.y - 60, 14, '#ffffff', 200);
+    this.tweens.add({ targets: this.gate, surge: 1, duration: 450, ease: 'Cubic.out' });
+    this.fx.puff(L.exit.x, L.exit.y - 60, 30, this.color, 320); this.fx.puff(this.gate.x, this.gate.y, 14, '#ffffff', 200);
     const st = this.stats;
     const bonus = {
       time: Math.max(0, Math.round(L.par - st.time)) * 10,
@@ -352,6 +397,7 @@ export class GameScene extends Phaser.Scene {
     const on = p.standingOn?.solid;
     if (p.ground && on && p.x > on.x + 50 && p.x < on.x + on.w - 50) this.lastSafe = { x: p.x, y: on.y };
 
+    this.updateGate(dt, time);
     this.updateShots(dt, cam);
     for (const e of this.enemies) e.update(dt, p, cam);
     if (this.mode === 'play') this.enemyContacts();

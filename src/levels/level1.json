@@ -47,6 +47,11 @@
    "name": "par",
    "type": "int",
    "value": 80
+  },
+  {
+   "name": "gate",
+   "type": "string",
+   "value": "cyan"
   }
  ],
  "layers": [
