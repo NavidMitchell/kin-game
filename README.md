@@ -64,7 +64,7 @@ Levels are [Tiled](https://www.mapeditor.org) maps in `src/levels/level1.json` t
   - `chips`, with properties `count`, `spacing`, `arc`
   - `tank`, `egg`, `repair`
   - `hint`, with property `text`
-- **Map properties**: `name`, `subtitle`, `color`, `bgHue`, `bgTint`, `wall` (tower art: `red`, `magenta`, `orange` or `green`, from `assets/towers/`), `bpm`, `transpose`, `par`.
+- **Map properties**: `name`, `subtitle`, `color`, `bgHue`, `bgTint`, `wall` (optional tower art for solid ground: `red`, `magenta`, `orange` or `green`, from `assets/towers/`; leave it out for plain ground, as every level but The Spire does), `bpm`, `transpose`, `par`.
 
 Gaps between pieces of `ground` that reach the bottom of the map become glowing pits automatically. After editing, run:
 

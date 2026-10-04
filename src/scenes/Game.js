@@ -101,14 +101,15 @@ export class GameScene extends Phaser.Scene {
     this.moverGroup = this.physics.add.group({ allowGravity: false, immovable: true, frictionX: 1 });   // frictionX 1: riders move with the lift
     this.solids = L.solids; this.movers = [];
 
-    const wallKey = this.textures.exists('tower-' + L.wall) ? 'tower-' + L.wall : 'tower-red';
+    // no `wall` map property means no facade: every block gets the plain ground look
+    const wallKey = !L.wall ? null : this.textures.exists('tower-' + L.wall) ? 'tower-' + L.wall : 'tower-red';
     for (const s of L.solids) {
       const z = this.add.zone(s.x + s.w / 2, s.y + s.h / 2, s.w, s.h);
       z.plat = { solid: s };
       this.solidGroup.add(z);
       // tower facade: whole storeys only, starting on a ledge under the roof edge and ending on one,
-      // with a plain base below. Blocks too short for a storey keep the plain ground look.
-      const storeys = Math.floor((s.h - ROOF_H - TOWER.ledge * WALL_SCALE - 8) / (TOWER.storey * WALL_SCALE));
+      // with a plain base below. Blocks too short for a storey, or levels without a wall, keep the plain ground look.
+      const storeys = !wallKey ? 0 : Math.floor((s.h - ROOF_H - TOWER.ledge * WALL_SCALE - 8) / (TOWER.storey * WALL_SCALE));
       if (storeys >= 1) {
         const fy = s.y + ROOF_H, fh = (storeys * TOWER.storey + TOWER.ledge) * WALL_SCALE;
         this.add.rectangle(s.x, s.y, s.w, s.h, 0x0b0a10).setOrigin(0).setDepth(DEPTH.plat);

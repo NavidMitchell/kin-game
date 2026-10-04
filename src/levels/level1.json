@@ -47,11 +47,6 @@
    "name": "par",
    "type": "int",
    "value": 80
-  },
-  {
-   "name": "wall",
-   "type": "string",
-   "value": "red"
   }
  ],
  "layers": [
