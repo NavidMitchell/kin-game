@@ -64,7 +64,7 @@ Levels are [Tiled](https://www.mapeditor.org) maps in `src/levels/level1.json` t
   - `chips`, with properties `count`, `spacing`, `arc`
   - `tank`, `egg`, `repair`
   - `hint`, with property `text`
-- **Map properties**: `name`, `subtitle`, `color`, `bgHue`, `bgTint`, `bpm`, `transpose`, `par`.
+- **Map properties**: `name`, `subtitle`, `color`, `bgHue`, `bgTint`, `wall` (tower art: `red`, `magenta`, `orange` or `green`, from `assets/towers/`), `bpm`, `transpose`, `par`.
 
 Gaps between pieces of `ground` that reach the bottom of the map become glowing pits automatically. After editing, run:
 
@@ -87,8 +87,8 @@ src/entities/           Player (Arcade body + visuals), Enemy (drones and skimme
 src/gfx/                texture baking (neon props, glowing sprite atlases), particles, canvas drawing helpers
 src/audio/              synthesised sound effects and music
 src/levels/             Tiled maps + parser
-tools/                  level checker, single-file build step, art generators (tools/art)
-assets/                 sprite sheets, background, wall texture, story slides, title poster, logo
+tools/                  level checker, single-file build step
+assets/                 sprite sheets, background, tower facades (towers/), story slides, title poster, logo
 ```
 
 ## Building

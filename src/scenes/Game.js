@@ -15,7 +15,8 @@ import { save } from '../save.js';
 
 const overlap = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 const BOOST_RESPAWN = 5;
-const WALL_TILE = 512;   // assets/wall.webp is a seamless 512px square
+// assets/towers/*.webp: seamless facades, 8 storeys per tile, drawn at this scale
+const WALL_SCALE = 0.5;
 
 export class GameScene extends Phaser.Scene {
   constructor() { super('Game'); }
@@ -96,6 +97,7 @@ export class GameScene extends Phaser.Scene {
     this.moverGroup = this.physics.add.group({ allowGravity: false, immovable: true, frictionX: 1 });   // frictionX 1: riders move with the lift
     this.solids = L.solids; this.movers = [];
 
+    const wallKey = this.textures.exists('tower-' + L.wall) ? 'tower-' + L.wall : 'tower-red';
     for (const s of L.solids) {
       const z = this.add.zone(s.x + s.w / 2, s.y + s.h / 2, s.w, s.h);
       z.plat = { solid: s };
@@ -104,9 +106,9 @@ export class GameScene extends Phaser.Scene {
       this.add.tileSprite(s.x, s.y - GTOP_PAD, s.w, topH + GTOP_PAD, groundTop(this, c)).setOrigin(0).setDepth(DEPTH.plat).setTilePosition(s.x % 120, 0);
       if (s.h > GTOP_H) {
         const fy = s.y + GTOP_H;
-        // assets/wall.webp: neutral facade, tinted so the lit windows take the level colour
-        this.add.tileSprite(s.x, fy, s.w, s.h - GTOP_H, 'wall').setOrigin(0).setDepth(DEPTH.plat)
-          .setTilePosition(s.x % WALL_TILE, fy % WALL_TILE).setTint(hexNum(c));
+        // tile offset in texture px keeps neighbouring blocks' facades lined up in world space
+        this.add.tileSprite(s.x, fy, s.w, s.h - GTOP_H, wallKey).setOrigin(0).setDepth(DEPTH.plat)
+          .setTileScale(WALL_SCALE, WALL_SCALE).setTilePosition(s.x / WALL_SCALE, fy / WALL_SCALE);
       }
       // neon trim down any side that faces open air
       for (const side of [-1, 1]) {

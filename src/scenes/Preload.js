@@ -6,7 +6,10 @@ import robotUrl from '../../assets/robot.webp';
 import shootUrl from '../../assets/robot_shoot.webp';
 import droneUrl from '../../assets/drone.webp';
 import cityUrl from '../../assets/city.webp';
-import wallUrl from '../../assets/wall.webp';
+import towerRed from '../../assets/towers/red.webp';
+import towerMagenta from '../../assets/towers/magenta.webp';
+import towerOrange from '../../assets/towers/orange.webp';
+import towerGreen from '../../assets/towers/green.webp';
 import titleUrl from '../../assets/title.jpg';
 import logoSvg from '../../assets/kinotic-logo.svg?raw';
 
@@ -21,7 +24,11 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('shoot-src', shootUrl);
     this.load.image('drone-src', droneUrl);
     this.load.image('city', cityUrl);
-    this.load.image('wall', wallUrl);
+    // tower facades for solid ground; each level picks one with its `wall` map property
+    this.load.image('tower-red', towerRed);
+    this.load.image('tower-magenta', towerMagenta);
+    this.load.image('tower-orange', towerOrange);
+    this.load.image('tower-green', towerGreen);
     this.load.image('title', titleUrl);
     // Phaser decodes data: URIs as base64, so hand it the SVG that way (works in the single-file build too)
     this.load.svg('logo', 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(logoSvg))), { width: 480 });
