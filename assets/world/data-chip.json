@@ -1,0 +1,25 @@
+{
+  "image": "data-chip.webp",
+  "width": 1024,
+  "height": 512,
+  "frameWidth": 256,
+  "frameHeight": 256,
+  "columns": 4,
+  "rows": 2,
+  "frameCount": 8,
+  "margin": 0,
+  "spacing": 0,
+  "origin": [
+    0.5,
+    0.5
+  ],
+  "diamondSize": 120,
+  "animations": {
+    "idle": {
+      "start": 0,
+      "end": 7,
+      "frameRate": 8,
+      "repeat": -1
+    }
+  }
+}
