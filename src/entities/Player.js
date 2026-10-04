@@ -33,7 +33,7 @@ export class Player {
     }).setDepth(DEPTH.fx);
 
     Object.assign(this, {
-      face: 1, state: 'idle', t: 0, atkHit: false, inv: 0, coyote: 0, landT: 0, airT: 0,
+      face: 1, state: 'idle', t: 0, runT: 0, atkHit: false, inv: 0, coyote: 0, landT: 0, airT: 0,
       jet: false, thrust: false, ground: false, jumpBuffer: 0, atkBuffer: 0, standingOn: null, frozen: false, hidden: false,
     });
   }
@@ -60,6 +60,7 @@ export class Player {
 
   update(dt) {
     const b = this.body, scene = this.scene;
+    const previousState = this.state, previousFace = this.face;
     this.jumpBuffer -= dt; this.atkBuffer -= dt;
     const wasGround = this.ground;
     this.ground = b.blocked.down || b.touching.down;
@@ -118,11 +119,15 @@ export class Player {
       if (this.t > ATK_TIME) this.state = 'idle';
     }
     if (this.state !== 'attack') this.state = !this.ground ? 'jump' : ducking ? 'duck' : Math.abs(b.velocity.x) > 20 ? 'run' : 'idle';
+    if (this.state === 'run') {
+      if (previousState !== 'run' || previousFace !== this.face) this.runT = 0;
+      else this.runT += dt * Math.min(1, Math.abs(this.vx) / RUN);
+    }
     this.render(dt);
   }
 
   frameIndex() {
-    return kinFrame(kinMap, { state: this.state, t: this.t, jet: this.jet,
+    return kinFrame(kinMap, { state: this.state, t: this.state === 'run' ? this.runT : this.t, jet: this.jet,
       thrust: this.thrust, vy: this.vy, landT: this.landT });
   }
 
