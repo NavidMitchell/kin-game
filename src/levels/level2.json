@@ -1,0 +1,828 @@
+{
+ "compressionlevel": -1,
+ "type": "map",
+ "version": "1.10",
+ "tiledversion": "1.11.0",
+ "orientation": "orthogonal",
+ "renderorder": "right-down",
+ "infinite": false,
+ "width": 256,
+ "height": 15,
+ "tilewidth": 36,
+ "tileheight": 36,
+ "nextlayerid": 3,
+ "nextobjectid": 48,
+ "properties": [
+  {
+   "name": "name",
+   "type": "string",
+   "value": "Rooftop Run"
+  },
+  {
+   "name": "subtitle",
+   "type": "string",
+   "value": "Hop the rooftops. Fly the big gap on a jet tank."
+  },
+  {
+   "name": "color",
+   "type": "color",
+   "value": "#ffff4fd8"
+  },
+  {
+   "name": "bgTint",
+   "type": "color",
+   "value": "#ffffffff"
+  },
+  {
+   "name": "bgHue",
+   "type": "int",
+   "value": -40
+  },
+  {
+   "name": "bpm",
+   "type": "int",
+   "value": 144
+  },
+  {
+   "name": "transpose",
+   "type": "int",
+   "value": 2
+  },
+  {
+   "name": "par",
+   "type": "int",
+   "value": 105
+  }
+ ],
+ "layers": [
+  {
+   "id": 1,
+   "name": "Platforms",
+   "type": "objectgroup",
+   "draworder": "topdown",
+   "opacity": 1,
+   "visible": true,
+   "x": 0,
+   "y": 0,
+   "objects": [
+    {
+     "id": 1,
+     "name": "",
+     "type": "ground",
+     "x": 0,
+     "y": 468,
+     "width": 900,
+     "height": 72,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 5,
+     "name": "",
+     "type": "ground",
+     "x": 1080,
+     "y": 410,
+     "width": 620,
+     "height": 130,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 8,
+     "name": "",
+     "type": "ground",
+     "x": 1880,
+     "y": 440,
+     "width": 520,
+     "height": 100,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 10,
+     "name": "",
+     "type": "float",
+     "x": 2510,
+     "y": 380,
+     "width": 150,
+     "height": 26,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 12,
+     "name": "",
+     "type": "float",
+     "x": 2740,
+     "y": 320,
+     "width": 150,
+     "height": 26,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 14,
+     "name": "",
+     "type": "float",
+     "x": 2970,
+     "y": 380,
+     "width": 150,
+     "height": 26,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 16,
+     "name": "",
+     "type": "ground",
+     "x": 3200,
+     "y": 430,
+     "width": 700,
+     "height": 110,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 25,
+     "name": "",
+     "type": "ground",
+     "x": 4900,
+     "y": 450,
+     "width": 700,
+     "height": 90,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 28,
+     "name": "",
+     "type": "ground",
+     "x": 5780,
+     "y": 400,
+     "width": 720,
+     "height": 140,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 32,
+     "name": "",
+     "type": "ground",
+     "x": 6500,
+     "y": 468,
+     "width": 800,
+     "height": 72,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 37,
+     "name": "",
+     "type": "float",
+     "x": 7380,
+     "y": 400,
+     "width": 120,
+     "height": 26,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 39,
+     "name": "",
+     "type": "float",
+     "x": 7600,
+     "y": 330,
+     "width": 120,
+     "height": 26,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 40,
+     "name": "",
+     "type": "float",
+     "x": 7820,
+     "y": 400,
+     "width": 120,
+     "height": 26,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 42,
+     "name": "",
+     "type": "float",
+     "x": 8030,
+     "y": 330,
+     "width": 120,
+     "height": 26,
+     "rotation": 0,
+     "visible": true
+    },
+    {
+     "id": 44,
+     "name": "",
+     "type": "ground",
+     "x": 8250,
+     "y": 420,
+     "width": 966,
+     "height": 120,
+     "rotation": 0,
+     "visible": true
+    }
+   ]
+  },
+  {
+   "id": 2,
+   "name": "Entities",
+   "type": "objectgroup",
+   "draworder": "topdown",
+   "opacity": 1,
+   "visible": true,
+   "x": 0,
+   "y": 0,
+   "objects": [
+    {
+     "id": 2,
+     "name": "",
+     "type": "start",
+     "x": 150,
+     "y": 468,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true
+    },
+    {
+     "id": 3,
+     "name": "",
+     "type": "chips",
+     "x": 420,
+     "y": 400,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "count",
+       "type": "int",
+       "value": 4
+      }
+     ]
+    },
+    {
+     "id": 4,
+     "name": "",
+     "type": "skimmer",
+     "x": 650,
+     "y": 468,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "range",
+       "type": "int",
+       "value": 150
+      }
+     ]
+    },
+    {
+     "id": 6,
+     "name": "",
+     "type": "drone",
+     "x": 1400,
+     "y": 410,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "range",
+       "type": "int",
+       "value": 120
+      }
+     ]
+    },
+    {
+     "id": 7,
+     "name": "",
+     "type": "chips",
+     "x": 1200,
+     "y": 350,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "count",
+       "type": "int",
+       "value": 3
+      }
+     ]
+    },
+    {
+     "id": 9,
+     "name": "",
+     "type": "chips",
+     "x": 2000,
+     "y": 380,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "count",
+       "type": "int",
+       "value": 4
+      }
+     ]
+    },
+    {
+     "id": 11,
+     "name": "",
+     "type": "chips",
+     "x": 2530,
+     "y": 340,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "count",
+       "type": "int",
+       "value": 3
+      }
+     ]
+    },
+    {
+     "id": 13,
+     "name": "",
+     "type": "drone",
+     "x": 2815,
+     "y": 320,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "range",
+       "type": "int",
+       "value": 0
+      }
+     ]
+    },
+    {
+     "id": 15,
+     "name": "",
+     "type": "chips",
+     "x": 2990,
+     "y": 340,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "count",
+       "type": "int",
+       "value": 3
+      }
+     ]
+    },
+    {
+     "id": 17,
+     "name": "",
+     "type": "checkpoint",
+     "x": 3320,
+     "y": 430,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true
+    },
+    {
+     "id": 18,
+     "name": "",
+     "type": "skimmer",
+     "x": 3520,
+     "y": 430,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "range",
+       "type": "int",
+       "value": 110
+      }
+     ]
+    },
+    {
+     "id": 19,
+     "name": "",
+     "type": "skimmer",
+     "x": 3740,
+     "y": 430,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "range",
+       "type": "int",
+       "value": 90
+      }
+     ]
+    },
+    {
+     "id": 20,
+     "name": "",
+     "type": "hint",
+     "x": 3640,
+     "y": 260,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "text",
+       "type": "string",
+       "value": "GRAB THE JET TANK, THEN HOLD JUMP TO FLY"
+      }
+     ]
+    },
+    {
+     "id": 21,
+     "name": "",
+     "type": "tank",
+     "x": 3840,
+     "y": 430,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true
+    },
+    {
+     "id": 22,
+     "name": "",
+     "type": "chips",
+     "x": 4040,
+     "y": 300,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "count",
+       "type": "int",
+       "value": 6
+      },
+      {
+       "name": "arc",
+       "type": "bool",
+       "value": false
+      },
+      {
+       "name": "spacing",
+       "type": "int",
+       "value": 70
+      }
+     ]
+    },
+    {
+     "id": 23,
+     "name": "",
+     "type": "drone",
+     "x": 4420,
+     "y": 360,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "range",
+       "type": "int",
+       "value": 160
+      }
+     ]
+    },
+    {
+     "id": 24,
+     "name": "",
+     "type": "chips",
+     "x": 4520,
+     "y": 260,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "count",
+       "type": "int",
+       "value": 5
+      },
+      {
+       "name": "arc",
+       "type": "bool",
+       "value": false
+      },
+      {
+       "name": "spacing",
+       "type": "int",
+       "value": 70
+      }
+     ]
+    },
+    {
+     "id": 26,
+     "name": "",
+     "type": "chips",
+     "x": 5050,
+     "y": 390,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "count",
+       "type": "int",
+       "value": 4
+      }
+     ]
+    },
+    {
+     "id": 27,
+     "name": "",
+     "type": "skimmer",
+     "x": 5300,
+     "y": 450,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "range",
+       "type": "int",
+       "value": 160
+      }
+     ]
+    },
+    {
+     "id": 29,
+     "name": "",
+     "type": "repair",
+     "x": 5900,
+     "y": 400,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true
+    },
+    {
+     "id": 30,
+     "name": "",
+     "type": "drone",
+     "x": 6150,
+     "y": 400,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "range",
+       "type": "int",
+       "value": 150
+      }
+     ]
+    },
+    {
+     "id": 31,
+     "name": "",
+     "type": "chips",
+     "x": 6200,
+     "y": 340,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "count",
+       "type": "int",
+       "value": 3
+      }
+     ]
+    },
+    {
+     "id": 33,
+     "name": "",
+     "type": "checkpoint",
+     "x": 6640,
+     "y": 468,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true
+    },
+    {
+     "id": 34,
+     "name": "",
+     "type": "skimmer",
+     "x": 6950,
+     "y": 468,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "range",
+       "type": "int",
+       "value": 160
+      }
+     ]
+    },
+    {
+     "id": 35,
+     "name": "",
+     "type": "chips",
+     "x": 6850,
+     "y": 400,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "count",
+       "type": "int",
+       "value": 5
+      }
+     ]
+    },
+    {
+     "id": 36,
+     "name": "",
+     "type": "egg",
+     "x": 7220,
+     "y": 468,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true
+    },
+    {
+     "id": 38,
+     "name": "",
+     "type": "chips",
+     "x": 7395,
+     "y": 360,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "count",
+       "type": "int",
+       "value": 2
+      }
+     ]
+    },
+    {
+     "id": 41,
+     "name": "",
+     "type": "chips",
+     "x": 7835,
+     "y": 360,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "count",
+       "type": "int",
+       "value": 2
+      }
+     ]
+    },
+    {
+     "id": 43,
+     "name": "",
+     "type": "drone",
+     "x": 8090,
+     "y": 330,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "range",
+       "type": "int",
+       "value": 0
+      }
+     ]
+    },
+    {
+     "id": 45,
+     "name": "",
+     "type": "chips",
+     "x": 8380,
+     "y": 360,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "count",
+       "type": "int",
+       "value": 4
+      }
+     ]
+    },
+    {
+     "id": 46,
+     "name": "",
+     "type": "skimmer",
+     "x": 8560,
+     "y": 420,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true,
+     "properties": [
+      {
+       "name": "range",
+       "type": "int",
+       "value": 100
+      }
+     ]
+    },
+    {
+     "id": 47,
+     "name": "",
+     "type": "exit",
+     "x": 8960,
+     "y": 420,
+     "width": 0,
+     "height": 0,
+     "rotation": 0,
+     "visible": true,
+     "point": true
+    }
+   ]
+  }
+ ],
+ "tilesets": []
+}
