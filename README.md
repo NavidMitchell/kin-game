@@ -83,7 +83,7 @@ src/entities/           Player (Arcade body + visuals), Enemy (drones and skimme
 src/gfx/                texture baking (neon props, glowing sprite atlases), particles, canvas drawing helpers
 src/audio/              synthesised sound effects and music
 src/levels/             Tiled maps + parser
-tools/                  level checker, single-file build step
+tools/                  level checker, single-file build step, art generators (tools/art)
 assets/                 sprite sheets, background, title poster, logo
 ```
 

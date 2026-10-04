@@ -6,7 +6,7 @@ import { findPits } from '../levels/parse.js';
 import { Player } from '../entities/Player.js';
 import { Enemy } from '../entities/Enemy.js';
 import { Fx } from '../gfx/fx.js';
-import { groundTop, floatPlat, pitShaft, exitGate, beacon, facade, wallTrim, setAnchoredFrame, GTOP_H, GTOP_PAD, FLOAT_H, FLOAT_PAD, FACADE } from '../gfx/textures.js';
+import { groundTop, floatPlat, pitShaft, exitGate, beacon, wallTrim, setAnchoredFrame, GTOP_H, GTOP_PAD, FLOAT_H, FLOAT_PAD } from '../gfx/textures.js';
 import { hexNum } from '../gfx/draw.js';
 import { SFX, sfxTick, thruster } from '../audio/sfx.js';
 import { musicMode, musicSetLevel } from '../audio/music.js';
@@ -15,6 +15,7 @@ import { save } from '../save.js';
 
 const overlap = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 const BOOST_RESPAWN = 5;
+const WALL_TILE = 512;   // assets/wall.webp is a seamless 512px square
 
 export class GameScene extends Phaser.Scene {
   constructor() { super('Game'); }
@@ -103,7 +104,9 @@ export class GameScene extends Phaser.Scene {
       this.add.tileSprite(s.x, s.y - GTOP_PAD, s.w, topH + GTOP_PAD, groundTop(this, c)).setOrigin(0).setDepth(DEPTH.plat).setTilePosition(s.x % 120, 0);
       if (s.h > GTOP_H) {
         const fy = s.y + GTOP_H;
-        this.add.tileSprite(s.x, fy, s.w, s.h - GTOP_H, facade(this, c)).setOrigin(0).setDepth(DEPTH.plat).setTilePosition(s.x % FACADE, fy % FACADE);
+        // assets/wall.webp: neutral facade, tinted so the lit windows take the level colour
+        this.add.tileSprite(s.x, fy, s.w, s.h - GTOP_H, 'wall').setOrigin(0).setDepth(DEPTH.plat)
+          .setTilePosition(s.x % WALL_TILE, fy % WALL_TILE).setTint(hexNum(c));
       }
       // neon trim down any side that faces open air
       for (const side of [-1, 1]) {

@@ -191,34 +191,6 @@ export function groundTop(scene, color) {
   });
 }
 
-// Building front for the body of solid ground: storey bands, panel seams and a scatter of lit windows.
-// 240px square, repeats seamlessly; windows come from a fixed seed so every level looks the same build to build.
-export const FACADE = 240;
-export function facade(scene, color) {
-  return bake(scene, 'facade' + color, FACADE, FACADE, ctx => {
-    let seed = 7;
-    const rand = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-    ctx.fillStyle = '#0d0b13'; ctx.fillRect(0, 0, FACADE, FACADE);
-    for (let y = 0; y < FACADE; y += 60) {
-      // window grid: 4 bays of 60px, 3 windows per bay
-      for (let bx = 0; bx < FACADE; bx += 60) for (let wx = 0; wx < 3; wx++) {
-        const r = rand(), x = bx + 12 + wx * 14, wy = y + 18;
-        ctx.fillStyle = r < .1 ? rgba(color, .75) : r < .3 ? rgba(color, .28) : r < .55 ? rgba(color, .1) : '#09080d';
-        ctx.fillRect(x, wy, 8, 22);
-        if (r < .1) { ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.fillRect(x + 2, wy + 2, 2, 18); }
-      }
-      // storey band: dark ledge with a faint lit lip
-      ctx.fillStyle = '#08070b'; ctx.fillRect(0, y, FACADE, 6);
-      ctx.fillStyle = rgba(color, .14); ctx.fillRect(0, y + 6, FACADE, 1);
-    }
-    // pilasters between bays
-    for (let x = 0; x < FACADE; x += 60) {
-      ctx.fillStyle = '#09080d'; ctx.fillRect(x, 0, 6, FACADE);
-      ctx.fillStyle = rgba(color, .07); ctx.fillRect(x + 6, 0, 1, FACADE);
-    }
-  });
-}
-
 // Neon trim for an exposed side of solid ground (repeats vertically). 16px wide, the line sits at x=7..9.
 export function wallTrim(scene, color) {
   return bake(scene, 'trim' + color, 16, 64, ctx => {
