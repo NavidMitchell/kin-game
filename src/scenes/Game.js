@@ -6,6 +6,7 @@ import { LEVELS } from '../levels/index.js';
 import { findPits } from '../levels/parse.js';
 import { Player } from '../entities/Player.js';
 import { Enemy } from '../entities/Enemy.js';
+import { pipeLayout } from '../gfx/pipe-layout.js';
 import { Fx } from '../gfx/fx.js';
 import { pitShaft, wallTrim, setAnchoredFrame } from '../gfx/textures.js';
 import { pillarTexture, thrusterPorts, deckTexture, edgeMetrics, propOrigin, FLOAT_H, PLAT_PAD_X, PLAT_PAD_TOP, GATE_H, EDGE_LIGHT } from '../gfx/art.js';
@@ -141,28 +142,25 @@ export class GameScene extends Phaser.Scene {
         // Pipes are independent of the wall repeat: mostly straight runs, with
         // occasional fittings. Every module returns to the same centreline.
         const pipeXs = [], centres = [190.5, 175, 199, 161.5];
-        const runs = Math.max(1, Math.floor(s.w / 260)), segmentH = 240;
-        for (let run = 0; run < runs && fh >= 116; run++) {
-          const px = s.x + s.w * (run + .4) / runs;
+        for (const run of pipeLayout({ x: s.x, y: fy, w: s.w, h: fh })) {
+          const px = run.x;
           pipeXs.push(px);
-          // Finished elbows turn into the wall; reserve room before laying modules.
-          const endH = Math.min(58, fh / 2), endScale = endH / 58;
-          this.add.image(px, fy, 'pipe-end').setOrigin(14 / 54, 0).setScale(endScale)
+          const endOrigin = run.flip ? 1 - 14 / 54 : 14 / 54;
+          this.add.image(px, run.top, 'pipe-end').setOrigin(endOrigin, 0).setFlipX(run.flip)
             .setDepth(DEPTH.plat + .1);
-          this.add.image(px, fy + fh - endH, 'pipe-end').setOrigin(14 / 54, 0).setScale(endScale).setFlipY(true)
-            .setDepth(DEPTH.plat + .1);
-          let py = fy + endH - 1, index = 0;
-          const pipeBottom = fy + fh - endH + 1;
-          while (py + segmentH <= pipeBottom) {
-            const seed = Math.abs(Math.floor(s.x * 13 + s.y * 7 + run * 31 + index * 17));
-            const frame = seed % 5 < 3 ? 0 : 1 + seed % 3;
-            this.add.image(px, py, `pipe-${frame}`).setOrigin(centres[frame] / 384, 0)
-              .setDepth(DEPTH.plat + .1);
-            py += segmentH; index++;
+          this.add.image(px, run.bottom - 58, 'pipe-end').setOrigin(endOrigin, 0)
+            .setFlip(run.flip, true).setDepth(DEPTH.plat + .1);
+          for (const piece of run.pieces) {
+            if (piece.frame === null) {
+              this.add.tileSprite(px, piece.y, 92, piece.h, 'pipe-fill')
+                .setOrigin(centres[0] / 384, 0).setDepth(DEPTH.plat + .1);
+            } else {
+              const origin = centres[piece.frame] / 384;
+              this.add.image(px, piece.y, `pipe-${piece.frame}`)
+                .setOrigin(piece.flip ? 1 - origin : origin, 0).setFlipX(piece.flip)
+                .setDepth(DEPTH.plat + .1);
+            }
           }
-          // Only a plain straight section is shortened to fit the remaining height.
-          if (py < pipeBottom) this.add.tileSprite(px, py, 92, pipeBottom - py, 'pipe-fill')
-            .setOrigin(centres[0] / 384, 0).setDepth(DEPTH.plat + .1);
         }
         // Vent outlets follow the world-aligned panel grid, never clipped block edges.
         const panel = TOWER.storey * WALL_SCALE;
