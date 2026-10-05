@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { animationFrame, kinFrame } from '../src/gfx/kin-frames.js';
-import { ATK_FIRE, ATK_TIME } from '../src/config.js';
+import { ATK_FIRE, ATK_TIME, ATK_ANIM_TIME } from '../src/config.js';
 const map = JSON.parse(readFileSync(new URL('../assets/player/kin.json', import.meta.url)));
 const pick = overrides => kinFrame(map, { state: 'idle', t: 0, jet: false, thrust: false, vy: 0, landT: 0, ...overrides });
 
@@ -12,14 +12,15 @@ test('idle holds open eyes and blinks briefly before looping', () => {
   assert.equal(animationFrame(a, 2.21), a.frames[1]);
   assert.equal(animationFrame(a, 2.32), a.frames[0]);
 });
-test('attack phases stay synchronized with projectile timing for all equipment states', () => {
-  for (const [jet, thrust, prefix] of [[false, false, ''], [true, false, 'jet_'], [true, true, 'jet_thrust_']]) {
-    for (let i = 0; i < 6; i++) {
-      assert.equal(pick({ state: 'attack', jet, thrust, t: ATK_FIRE * (i + .5) / 6 }), map.animations[prefix + 'charge'].frames[i]);
-    }
+test('all attacks fire immediately with shared animation timing across equipment states', () => {
+  assert.equal(ATK_FIRE, 0);
+  assert.equal(ATK_TIME, .42);
+  for (const [jet, thrust, prefix] of [[false,false,''],[true,false,'jet_'],[true,true,'jet_thrust_']]) {
     for (let i = 0; i < 4; i++) {
-      assert.equal(pick({ state: 'attack', jet, thrust, t: ATK_FIRE + (ATK_TIME - ATK_FIRE) * (i + .5) / 4 }), map.animations[prefix + 'fire'].frames[i]);
+      assert.equal(pick({state:'attack',jet,thrust,t:ATK_ANIM_TIME*(i+.5)/4}),map.animations[prefix+'fire'].frames[i]);
     }
+    assert.equal(pick({state:'attack',jet,thrust,t:0}),map.animations[prefix+'fire'].frames[0]);
+    assert.equal(pick({state:'attack',jet,thrust,t:ATK_TIME}),map.animations[prefix+'fire'].frames.at(-1));
   }
 });
 test('air poses follow velocity; thrust and equipped movement select their own artwork', () => {
@@ -39,10 +40,4 @@ test('all manifest frames fit the uniform sheet', () => {
   assert.equal(map.width, map.columns * map.frameWidth);
   assert.equal(map.height, map.rows * map.frameHeight);
   for (const a of Object.values(map.animations)) for (const frame of a.frames) assert.ok(Number.isInteger(frame) && frame >= 0 && frame < map.frameCount);
-});
-test('touch fire starts at the muzzle-flash pose without charging for every equipment state', () => {
-  for (const [jet, thrust, prefix] of [[false,false,''],[true,false,'jet_'],[true,true,'jet_thrust_']]) {
-    assert.equal(pick({state:'attack',jet,thrust,t:0,touchAttack:true}),map.animations[prefix+'fire'].frames[0]);
-    assert.equal(pick({state:'attack',jet,thrust,t:ATK_TIME,touchAttack:true}),map.animations[prefix+'fire'].frames.at(-1));
-  }
 });

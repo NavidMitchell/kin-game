@@ -1,4 +1,4 @@
-import { ATK_FIRE, ATK_TIME } from '../config.js';
+import { ATK_ANIM_TIME } from '../config.js';
 
 // Read sequence indices and timing from the artwork manifest; repeated indices are intentional.
 export function animationFrame(animation, seconds, duration) {
@@ -15,15 +15,12 @@ export function animationFrame(animation, seconds, duration) {
   return frames.at(-1);
 }
 
-export function kinFrame(map, { state, t, jet, thrust, vy, landT, touchAttack = false }) {
+export function kinFrame(map, { state, t, jet, thrust, vy, landT }) {
   const prefix = jet ? 'jet_' : '';
   const active = jet && thrust;
   if (state === 'attack') {
     const attackPrefix = active ? 'jet_thrust_' : prefix;
-    if (touchAttack) return animationFrame(map.animations[attackPrefix + 'fire'], t, ATK_TIME - ATK_FIRE);
-    return t < ATK_FIRE
-      ? animationFrame(map.animations[attackPrefix + 'charge'], t, ATK_FIRE)
-      : animationFrame(map.animations[attackPrefix + 'fire'], t - ATK_FIRE, ATK_TIME - ATK_FIRE);
+    return animationFrame(map.animations[attackPrefix + 'fire'], t, ATK_ANIM_TIME);
   }
   if (active) return animationFrame(map.animations.jet_thrust, t);
   if (state === 'jump') {

@@ -29,7 +29,7 @@ export const SFR = {
   fire:   [[7,224,187,165,73],[200,230,211,165,256],[411,230,210,165,466],[621,233,358,163,676]],
   proj:   [[1014,276,183,90],[1237,289,140,67],[1405,301,85,49]],
 };
-export const SH_SCALE = 0.62, ATK_TIME = 0.42, ATK_FIRE = 0.28, SHOT_SPEED = 780;
+export const SH_SCALE = 0.62, ATK_TIME = 0.42, ATK_FIRE = 0, ATK_ANIM_TIME = 0.14, SHOT_SPEED = 780;
 
 export const CYAN = '#35e9ff', RED = '#ff2d55';
 export const HUD_FONT = 'Rajdhani, "Segoe UI", system-ui, sans-serif';

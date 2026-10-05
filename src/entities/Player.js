@@ -5,7 +5,7 @@ import {
   RUN, JUMP_V, JET_THRUST, JET_SPEED, MAX_FALL, ACC_GROUND, ACC_AIR, COYOTE, JUMP_BUFFER, ATK_BUFFER,
   PLAYER_W, PLAYER_H, PLAYER_DUCK_H, ATK_TIME, ATK_FIRE, DEPTH,
 } from '../config.js';
-import { touchJumping, touchMoving, touchShooting, held } from '../controls.js';
+import { touchJumping, held } from '../controls.js';
 import kinMap from '../../assets/player/kin.json';
 import { kinFrame } from '../gfx/kin-frames.js';
 import { SFX, thruster } from '../audio/sfx.js';
@@ -33,7 +33,7 @@ export class Player {
     }).setDepth(DEPTH.fx);
 
     Object.assign(this, {
-      face: 1, state: 'idle', t: 0, runT: 0, atkHit: false, touchAttack: false, bufferedTouchShot: false, inv: 0, coyote: 0, landT: 0, airT: 0,
+      face: 1, state: 'idle', t: 0, runT: 0, atkHit: false, inv: 0, coyote: 0, landT: 0, airT: 0,
       jet: false, thrust: false, ground: false, jumpBuffer: 0, atkBuffer: 0, standingOn: null, frozen: false, hidden: false,
     });
   }
@@ -51,7 +51,7 @@ export class Player {
   }
 
   pressJump() { this.jumpBuffer = JUMP_BUFFER; }
-  pressShoot() { this.atkBuffer = ATK_BUFFER; this.bufferedTouchShot = touchShooting(); }
+  pressShoot() { this.atkBuffer = ATK_BUFFER; }
 
   teleport(x, y) {
     this.body.reset(x, y - PLAYER_H / 2);
@@ -68,23 +68,21 @@ export class Player {
     if (this.frozen) { b.setVelocityX(0); this.ground && b.setVelocityY(0); this.render(dt); return; }
 
     // --- attack
-    if ((this.atkBuffer > 0 || touchShooting()) && this.state !== 'attack') {
-      this.touchAttack = touchShooting() || (this.atkBuffer > 0 && this.bufferedTouchShot);
-      this.atkBuffer = 0; this.bufferedTouchShot = false;
+    if ((this.atkBuffer > 0 || held.shoot()) && this.state !== 'attack') {
+      this.atkBuffer = 0;
       this.state = 'attack'; this.t = 0; this.atkHit = false;
-      if (!this.touchAttack) SFX.charge();
     }
     const attacking = this.state === 'attack';
 
     // --- horizontal movement
     const dir = (held.right() ? 1 : 0) - (held.left() ? 1 : 0);
     const ducking = this.ground && held.down() && !attacking;
-    const target = ((attacking && !touchMoving()) || ducking) && this.ground ? 0 : dir * RUN;
+    const target = ducking && this.ground ? 0 : dir * RUN;
     const acc = this.ground ? ACC_GROUND : ACC_AIR;
     let vx = b.velocity.x;
     if (vx < target) vx = Math.min(target, vx + acc * dt); else if (vx > target) vx = Math.max(target, vx - acc * dt);
     b.setVelocityX(vx);
-    if (dir && (!attacking || touchMoving()) && !ducking) this.face = dir;
+    if (dir && !ducking) this.face = dir;
 
     // --- ride vertical movers down instead of bouncing off them
     if (this.ground && this.standingOn?.mover) {
@@ -120,7 +118,7 @@ export class Player {
 
     // --- state machine
     if (attacking) {
-      if (!this.atkHit && this.t >= (this.touchAttack ? 0 : ATK_FIRE)) { this.atkHit = true; scene.fireShot(this.x + this.face * 46, this.y - 52, this.face); }
+      if (!this.atkHit && this.t >= ATK_FIRE) { this.atkHit = true; scene.fireShot(this.x + this.face * 46, this.y - 52, this.face); }
       if (this.t > ATK_TIME) this.state = 'idle';
     }
     if (this.state !== 'attack') this.state = !this.ground ? 'jump' : ducking ? 'duck' : Math.abs(b.velocity.x) > 20 ? 'run' : 'idle';
@@ -133,7 +131,7 @@ export class Player {
 
   frameIndex() {
     return kinFrame(kinMap, { state: this.state, t: this.state === 'run' ? this.runT : this.t, jet: this.jet,
-      thrust: this.thrust, vy: this.vy, landT: this.landT, touchAttack: this.touchAttack });
+      thrust: this.thrust, vy: this.vy, landT: this.landT });
   }
 
   // visuals follow the body (called after movement each frame)
