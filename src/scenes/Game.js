@@ -1,12 +1,13 @@
 // One level: builds the world from its Tiled map, runs combat, pickups, checkpoints and the exit gate.
 import Phaser from 'phaser';
 import chipMap from '../../assets/world/data-chip.json';
-import { W, H, DEPTH, JUMP_V, MAX_HP, INVULN, SHOT_SPEED, LASER_SPEED, HUD_FONT } from '../config.js';
+import { W, H, DEPTH, RUN, JUMP_V, MAX_HP, INVULN, SHOT_SPEED, LASER_SPEED, HUD_FONT } from '../config.js';
 import { LEVELS } from '../levels/index.js';
 import { findPits } from '../levels/parse.js';
 import { Player } from '../entities/Player.js';
 import { Enemy } from '../entities/Enemy.js';
 import { pipeLayout } from '../gfx/pipe-layout.js';
+import { cameraLead, easeCamera } from '../gfx/camera-follow.js';
 import { Fx } from '../gfx/fx.js';
 import { pitShaft, wallTrim, setAnchoredFrame } from '../gfx/textures.js';
 import { pillarTexture, thrusterPorts, deckTexture, edgeMetrics, propOrigin, FLOAT_H, PLAT_PAD_X, PLAT_PAD_TOP, GATE_H, EDGE_LIGHT } from '../gfx/art.js';
@@ -68,6 +69,7 @@ export class GameScene extends Phaser.Scene {
     if (cp) this.skipToCheckpoint(cp);
 
     const cam = this.cameras.main;
+    this.lookAhead = 0;
     this.camX = Phaser.Math.Clamp(spawn.x - W * .38, 0, L.width - W);
     this.camY = Phaser.Math.Clamp(spawn.y - H * .68, 0, L.height - H);
     cam.setScroll(this.camX, this.camY);
@@ -375,6 +377,7 @@ export class GameScene extends Phaser.Scene {
     if (this.hp <= 0) { this.gameOver(); return; }
     if (fell) {
       p.teleport(this.lastSafe.x, this.lastSafe.y);
+      this.lookAhead = 0;
       this.camX = Phaser.Math.Clamp(this.lastSafe.x - W * .38, 0, this.level.width - W);
     } else {
       p.body.setVelocity(dir * 420, -500);
@@ -441,10 +444,11 @@ export class GameScene extends Phaser.Scene {
     p.update(dt);
     if (this.mode === 'play') this.stats.time += dt;
 
-    // camera: look ahead in the facing direction, follow vertically in tall levels
+    // Ease look-ahead from actual velocity, avoiding a target jump when facing flips.
     if (this.mode !== 'over') {
-      this.camX += ((p.x + p.face * 120 - W * .38) - this.camX) * Math.min(1, dt * 4);
-      this.camY += ((p.y - H * .68) - this.camY) * Math.min(1, dt * (p.ground ? 4 : 2.5));
+      this.lookAhead = cameraLead(this.lookAhead, p.vx, RUN, dt);
+      this.camX = easeCamera(this.camX, p.x + this.lookAhead - W * .38, 4, dt);
+      this.camY = easeCamera(this.camY, p.y - H * .68, p.ground ? 4 : 2.5, dt);
       this.camX = Phaser.Math.Clamp(this.camX, 0, L.width - W);
       this.camY = Phaser.Math.Clamp(this.camY, 0, L.height - H);
       cam.setScroll(this.camX, this.camY);
