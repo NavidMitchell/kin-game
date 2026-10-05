@@ -142,11 +142,18 @@ export class GameScene extends Phaser.Scene {
         // occasional fittings. Every module returns to the same centreline.
         const pipeXs = [], centres = [190.5, 175, 199, 161.5];
         const runs = Math.max(1, Math.floor(s.w / 260)), segmentH = 240;
-        for (let run = 0; run < runs; run++) {
+        for (let run = 0; run < runs && fh >= 116; run++) {
           const px = s.x + s.w * (run + .4) / runs;
           pipeXs.push(px);
-          let py = fy, index = 0;
-          while (py + segmentH <= fy + fh) {
+          // Finished elbows turn into the wall; reserve room before laying modules.
+          const endH = Math.min(58, fh / 2), endScale = endH / 58;
+          this.add.image(px, fy, 'pipe-end').setOrigin(14 / 54, 0).setScale(endScale)
+            .setDepth(DEPTH.plat + .1);
+          this.add.image(px, fy + fh - endH, 'pipe-end').setOrigin(14 / 54, 0).setScale(endScale).setFlipY(true)
+            .setDepth(DEPTH.plat + .1);
+          let py = fy + endH - 1, index = 0;
+          const pipeBottom = fy + fh - endH + 1;
+          while (py + segmentH <= pipeBottom) {
             const seed = Math.abs(Math.floor(s.x * 13 + s.y * 7 + run * 31 + index * 17));
             const frame = seed % 5 < 3 ? 0 : 1 + seed % 3;
             this.add.image(px, py, `pipe-${frame}`).setOrigin(centres[frame] / 384, 0)
@@ -154,7 +161,7 @@ export class GameScene extends Phaser.Scene {
             py += segmentH; index++;
           }
           // Only a plain straight section is shortened to fit the remaining height.
-          if (py < fy + fh) this.add.tileSprite(px, py, 92, fy + fh - py, 'pipe-fill')
+          if (py < pipeBottom) this.add.tileSprite(px, py, 92, pipeBottom - py, 'pipe-fill')
             .setOrigin(centres[0] / 384, 0).setDepth(DEPTH.plat + .1);
         }
         // Vent outlets follow the world-aligned panel grid, never clipped block edges.
@@ -344,6 +351,12 @@ export class GameScene extends Phaser.Scene {
     if (text) this.fx.pop(x, y, text, color, size);
   }
 
+  damageEnemy(e) {
+    if (e.hit()) { this.killEnemy(e); return; }
+    SFX.hitE();
+    this.fx.puff(e.x, e.top() + e.h / 2, 5, '#ffd1dc', 100);
+  }
+
   killEnemy(e) {
     e.kill();
     this.stats.kills++;
@@ -498,9 +511,9 @@ export class GameScene extends Phaser.Scene {
       if (!e.alive) continue;
       const box = e.box();
       const shot = this.shots.find(s => s.life > 0 && overlap({ x: s.x - 24, y: s.y - 14, w: 48, h: 28 }, box));
-      if (shot) { shot.life = 0; this.killEnemy(e); continue; }
+      if (shot) { shot.life = 0; this.damageEnemy(e); continue; }
       if (overlap(pb, box)) {
-        if (p.vy > 200 && p.y - 20 < box.y + box.h * .6) { this.killEnemy(e); p.body.setVelocityY(JUMP_V * .6); SFX.stomp(); }
+        if (p.vy > 200 && p.y - 20 < box.y + box.h * .6) { this.damageEnemy(e); p.body.setVelocityY(JUMP_V * .6); SFX.stomp(); }
         else if (p.inv <= 0) { this.hurt(false, e.x < p.x ? 1 : -1); if (this.mode !== 'play') return; }
       }
     }

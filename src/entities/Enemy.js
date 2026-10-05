@@ -2,6 +2,7 @@
 // Both patrol between minX and maxX. Same behaviour and hitboxes as the canvas build.
 import { DEPTH, SHOOT_TIME, SHOOT_FIRE, W } from '../config.js';
 import { setAnchoredFrame } from '../gfx/textures.js';
+import { enemyHealth, takeEnemyHit } from './enemy-health.js';
 import { SFX } from '../audio/sfx.js';
 
 const rnd = (a, b) => a + Math.random() * (b - a);
@@ -10,7 +11,7 @@ export class Enemy {
   constructor(scene, { type, x, y, range }) {
     const d = Math.random() < .5 ? -1 : 1;
     Object.assign(this, {
-      scene, type, x, y, w: 70, h: 44, face: d, vx: d * (type === 'drone' ? 90 : 130),
+      scene, type, x, y, hp: enemyHealth(type), hitT: 0, w: 70, h: 44, face: d, vx: d * (type === 'drone' ? 90 : 130),
       minX: x - range, maxX: x + range, alive: true, t: Math.random() * 6, dieT: 0, shootT: 0, cool: rnd(1, 3),
       warned: false, fired: false, gone: false, lookT: rnd(.5, 2),
     });
@@ -23,6 +24,7 @@ export class Enemy {
 
   update(dt, player, cam) {
     this.t += dt;
+    this.hitT = Math.max(0, this.hitT - dt);
     if (!this.alive) { this.dieT += dt; if (this.dieT > .55) this.destroy(); else this.render(); return; }
     const onScreen = this.x > cam.scrollX - 100 && this.x < cam.scrollX + W + 100;
     if (!this.warned && Math.abs(this.x - player.x) < W * .62 && onScreen) { this.warned = true; (this.type === 'drone' ? SFX.droneNear : SFX.skimmerNear)(); }
@@ -63,7 +65,14 @@ export class Enemy {
     else f = 'hover' + Math.floor(this.t * 7) % 4;
     setAnchoredFrame(this.sprite, 'drone', f);
     this.sprite.setPosition(this.x, this.top() + this.h / 2).setScale(this.face, 1);
+    if (this.hitT > 0) this.sprite.setTintFill(0xffb5c8); else this.sprite.clearTint();
     this.sprite.setAlpha(this.alive ? 1 : 1 - Math.max(0, (this.dieT - .4) / .15));
+  }
+
+  hit() {
+    const destroyed = takeEnemyHit(this);
+    if (!destroyed) this.hitT = .12;
+    return destroyed;
   }
 
   kill() {

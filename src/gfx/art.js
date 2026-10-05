@@ -84,6 +84,8 @@ export function fitArt(scene) {
   // in the GPU every frame as the camera crosses fractional pixel positions.
   const cooling = source(scene, 'cooling-tower');
   put(scene, 'cooling-tower', resample(cooling, [0, 0, cooling.width, cooling.height], 627, 627));
+  const pipeEnd = source(scene, 'pipe-end');
+  put(scene, 'pipe-end', resample(pipeEnd, [0, 0, pipeEnd.width, pipeEnd.height], 54, 58));
   const pipes = source(scene, 'pipe-modules');
   for (let i = 0; i < 4; i++) {
     put(scene, `pipe-${i}`, resample(pipes, [i * 384, 12, 384, 998], 92, 240));

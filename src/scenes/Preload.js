@@ -10,6 +10,7 @@ import chipMap from '../../assets/world/data-chip.json';
 import shootUrl from '../../assets/robot_shoot.webp';
 import droneUrl from '../../assets/drone.webp';
 import cityUrl from '../../assets/city.webp';
+import pipeEndUrl from '../../assets/towers/pipe-end.webp';
 import pipeModulesUrl from '../../assets/towers/pipe-modules.webp';
 import pillarUrl from '../../assets/world/pillar.webp';
 import coolingUrl from '../../assets/towers/cooling.webp';
@@ -39,6 +40,7 @@ export class PreloadScene extends Phaser.Scene {
     this.load.image('cooling-tower', coolingUrl);
     this.load.image('pillar-src', pillarUrl);
     this.load.image('pipe-modules', pipeModulesUrl);
+    this.load.image('pipe-end', pipeEndUrl);
     // exit gates (gate-cyan ... gate-red-blue); each level picks one with its `gate` map property
     for (const [path, url] of Object.entries(GATE_URLS)) this.load.image('gate-' + path.match(/exit-gate-([\w-]+)\.webp$/)[1], url);
     // platform pieces (plat-cyan-left ...) and ground edges (edge-cyan ...); a level picks a set with `palette`
