@@ -1,10 +1,12 @@
 // Keyboard + on-screen touch buttons. Scenes poll the held state and subscribe to presses.
 import { musicToggle, musicStart } from './audio/music.js';
-import { touchState } from './touch-state.js';
+import { padDirections, touchState } from './touch-state.js';
 import { audioCtx } from './audio/sfx.js';
 
 const keys = {};
 const fingers = touchState();
+const gestures = new Map();
+let touchHelpShown = false;
 const down = code => keys[code] || fingers.held(code);
 export const touchShooting = () => fingers.held('KeyB');
 const listeners = new Set();
@@ -39,6 +41,7 @@ function press(code) {
 export function releaseAll() {
   for (const k in keys) keys[k] = false;
   fingers.clear();
+  gestures.clear();
   document.querySelectorAll('.btn.held').forEach(el => el.classList.remove('held'));
 }
 async function fullscreen() {
@@ -84,27 +87,30 @@ export function initControls() {
     }
   });
   syncOrientation();
-  const bind = (id, codes) => {
-    const el = document.getElementById(id); if (!el) return;
-    const active = new Set();
-    el.addEventListener('pointerdown', e => {
-      if (document.body.classList.contains('mobile-portrait')) return;
-      e.preventDefault();
-      el.setPointerCapture(e.pointerId);
-      active.add(e.pointerId); fingers.press(e.pointerId, codes);
-      el.classList.add('held');
-      const playing = window.kin?.scene.getScene('Game')?.mode === 'play';
-      for (const code of playing ? codes : codes.slice(0, 1)) press(code);
-    });
-    const off = e => {
-      fingers.release(e.pointerId); active.delete(e.pointerId);
-      if (!active.size) el.classList.remove('held');
-    };
-    for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) el.addEventListener(ev, off);
-  };
-  bind('bl', ['ArrowLeft']); bind('br', ['ArrowRight']); bind('bd', ['ArrowDown']);
-  bind('bj', ['Space']); bind('ba', ['KeyB']); bind('bc', ['Space', 'KeyB']);
-  bind('bp', ['Escape']);
+  const playing = () => mobile && !document.body.classList.contains('mobile-portrait')
+    && window.kin?.scene.isActive('Game') && window.kin.scene.getScene('Game').mode === 'play';
+  document.addEventListener('pointerdown', e => {
+    if (!playing() || e.target.closest('button, #touch-help, #rotate')) return;
+    e.preventDefault();
+    const left = e.clientX < innerWidth / 2;
+    gestures.set(e.pointerId, { x: e.clientX, y: e.clientY, left, codes: left ? [] : ['KeyB'] });
+    e.target.setPointerCapture?.(e.pointerId);
+    fingers.press(e.pointerId, left ? [] : ['KeyB']);
+    if (!left) press('KeyB');
+  }, { passive: false });
+  document.addEventListener('pointermove', e => {
+    const g = gestures.get(e.pointerId);
+    if (!g || !playing()) return;
+    e.preventDefault();
+    if (!g.left) return;
+    const codes = padDirections(e.clientX - g.x, e.clientY - g.y);
+    fingers.press(e.pointerId, codes);
+    for (const code of codes) if (!g.codes.includes(code)) press(code);
+    g.codes = codes;
+  }, { passive: false });
+  const off = e => { gestures.delete(e.pointerId); fingers.release(e.pointerId); };
+  for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) document.addEventListener(ev, off);
+  document.getElementById('bp').addEventListener('click', () => press('Escape'));
   document.getElementById('bm').addEventListener('click', e => {
     musicToggle();
     const muted = e.currentTarget.getAttribute('aria-pressed') !== 'true';
@@ -114,4 +120,22 @@ export function initControls() {
   const fs = document.getElementById('bf');
   fs.hidden = !document.documentElement.requestFullscreen;
   fs.addEventListener('click', fullscreen);
+}
+
+export function showTouchHelp(scene) {
+  if (!document.body.classList.contains('mobile-controls') || touchHelpShown) return;
+  releaseAll();
+  scene.mode = 'touch-help'; scene.physics.pause();
+  const help = document.getElementById('touch-help'), start = document.getElementById('touch-start');
+  help.hidden = false;
+  const finish = () => {
+    if (document.body.classList.contains('mobile-portrait')) return;
+    touchHelpShown = true; help.hidden = true; releaseAll();
+    scene.mode = 'play'; scene.physics.resume();
+    start.removeEventListener('click', finish);
+  };
+  start.addEventListener('click', finish);
+  scene.events.once('shutdown', () => {
+    help.hidden = true; start.removeEventListener('click', finish); releaseAll();
+  });
 }

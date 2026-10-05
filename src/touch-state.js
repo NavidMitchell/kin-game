@@ -8,3 +8,13 @@ export function touchState() {
     clear() { pointers.clear(); },
   };
 }
+
+// Relative to the finger's landing point; diagonals combine movement and flight.
+export function padDirections(dx, dy, deadzone = 14) {
+  const codes = [];
+  if (dx < -deadzone) codes.push('ArrowLeft');
+  if (dx > deadzone) codes.push('ArrowRight');
+  if (dy < -deadzone) codes.push('Space');
+  if (dy > deadzone) codes.push('ArrowDown');
+  return codes;
+}

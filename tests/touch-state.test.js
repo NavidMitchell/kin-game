@@ -12,3 +12,12 @@ test('overlapping buttons retain input until every owning finger lifts; clear ca
   s.release(2); assert.ok(s.held('Space')); assert.equal(s.held('KeyB'), false);
   s.clear(); assert.equal(s.held('Space'), false);
 });
+
+import { padDirections } from '../src/touch-state.js';
+test('floating pad supports a deadzone, diagonal flight and crouching', () => {
+  assert.deepEqual(padDirections(0, 0), []);
+  assert.deepEqual(padDirections(10, -10), []);
+  assert.deepEqual(padDirections(30, -30), ['ArrowRight', 'Space']);
+  assert.deepEqual(padDirections(-30, 30), ['ArrowLeft', 'ArrowDown']);
+  assert.deepEqual(padDirections(0, -30), ['Space']);
+});

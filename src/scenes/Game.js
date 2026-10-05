@@ -13,7 +13,7 @@ import { pillarTexture, thrusterPorts, deckTexture, edgeMetrics, propOrigin, FLO
 import { hexNum } from '../gfx/draw.js';
 import { SFX, sfxTick, thruster } from '../audio/sfx.js';
 import { musicMode, musicSetLevel } from '../audio/music.js';
-import { releaseAll, onPress, isJump, isShoot, isBack } from '../controls.js';
+import { showTouchHelp, releaseAll, onPress, isJump, isShoot, isBack } from '../controls.js';
 import { save } from '../save.js';
 
 const overlap = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
@@ -82,6 +82,7 @@ export class GameScene extends Phaser.Scene {
 
     if (this.scene.isActive('HUD')) this.scene.stop('HUD');
     this.scene.launch('HUD');
+    showTouchHelp(this);
     this.time.delayedCall(250, () => this.events.emit('banner', cp ? 'CHECKPOINT' : `LEVEL ${L.id}`, cp ? L.name.toUpperCase() : L.name.toUpperCase()));
   }
 
@@ -433,7 +434,7 @@ export class GameScene extends Phaser.Scene {
   update(time, delta) {
     const dt = Math.min(.05, delta / 1000);
     sfxTick(dt);
-    if (this.mode === 'paused') return;
+    if (this.mode === 'paused' || this.mode === 'touch-help') return;
     this.lifeLostT -= dt;
     const L = this.level, p = this.player, cam = this.cameras.main;
     this.placeMovers(dt);
