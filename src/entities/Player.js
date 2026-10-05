@@ -5,7 +5,7 @@ import {
   RUN, JUMP_V, JET_THRUST, JET_SPEED, MAX_FALL, ACC_GROUND, ACC_AIR, COYOTE, JUMP_BUFFER, ATK_BUFFER,
   PLAYER_W, PLAYER_H, PLAYER_DUCK_H, ATK_TIME, ATK_FIRE, DEPTH,
 } from '../config.js';
-import { held } from '../controls.js';
+import { touchShooting, held } from '../controls.js';
 import kinMap from '../../assets/player/kin.json';
 import { kinFrame } from '../gfx/kin-frames.js';
 import { SFX, thruster } from '../audio/sfx.js';
@@ -68,7 +68,7 @@ export class Player {
     if (this.frozen) { b.setVelocityX(0); this.ground && b.setVelocityY(0); this.render(dt); return; }
 
     // --- attack
-    if (this.atkBuffer > 0 && this.state !== 'attack') { this.atkBuffer = 0; this.state = 'attack'; this.t = 0; this.atkHit = false; SFX.charge(); }
+    if ((this.atkBuffer > 0 || touchShooting()) && this.state !== 'attack') { this.atkBuffer = 0; this.state = 'attack'; this.t = 0; this.atkHit = false; SFX.charge(); }
     const attacking = this.state === 'attack';
 
     // --- horizontal movement

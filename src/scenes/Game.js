@@ -13,7 +13,7 @@ import { pillarTexture, thrusterPorts, deckTexture, edgeMetrics, propOrigin, FLO
 import { hexNum } from '../gfx/draw.js';
 import { SFX, sfxTick, thruster } from '../audio/sfx.js';
 import { musicMode, musicSetLevel } from '../audio/music.js';
-import { onPress, isJump, isShoot, isBack } from '../controls.js';
+import { releaseAll, onPress, isJump, isShoot, isBack } from '../controls.js';
 import { save } from '../save.js';
 
 const overlap = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
@@ -419,6 +419,7 @@ export class GameScene extends Phaser.Scene {
 
   pause() {
     if (this.mode !== 'play') return;
+    releaseAll();
     this.mode = 'paused'; this.physics.pause(); this.tweens.pauseAll(); thruster(0);
     musicMode('duck');
     this.scene.launch('Result', { kind: 'pause', level: this.levelIndex });
