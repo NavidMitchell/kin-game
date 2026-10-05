@@ -15,11 +15,12 @@ export function animationFrame(animation, seconds, duration) {
   return frames.at(-1);
 }
 
-export function kinFrame(map, { state, t, jet, thrust, vy, landT }) {
+export function kinFrame(map, { state, t, jet, thrust, vy, landT, touchAttack = false }) {
   const prefix = jet ? 'jet_' : '';
   const active = jet && thrust;
   if (state === 'attack') {
     const attackPrefix = active ? 'jet_thrust_' : prefix;
+    if (touchAttack) return animationFrame(map.animations[attackPrefix + 'fire'], t, ATK_TIME - ATK_FIRE);
     return t < ATK_FIRE
       ? animationFrame(map.animations[attackPrefix + 'charge'], t, ATK_FIRE)
       : animationFrame(map.animations[attackPrefix + 'fire'], t - ATK_FIRE, ATK_TIME - ATK_FIRE);

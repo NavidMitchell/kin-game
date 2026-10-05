@@ -33,7 +33,7 @@ export class Player {
     }).setDepth(DEPTH.fx);
 
     Object.assign(this, {
-      face: 1, state: 'idle', t: 0, runT: 0, atkHit: false, inv: 0, coyote: 0, landT: 0, airT: 0,
+      face: 1, state: 'idle', t: 0, runT: 0, atkHit: false, touchAttack: false, bufferedTouchShot: false, inv: 0, coyote: 0, landT: 0, airT: 0,
       jet: false, thrust: false, ground: false, jumpBuffer: 0, atkBuffer: 0, standingOn: null, frozen: false, hidden: false,
     });
   }
@@ -51,7 +51,7 @@ export class Player {
   }
 
   pressJump() { this.jumpBuffer = JUMP_BUFFER; }
-  pressShoot() { this.atkBuffer = ATK_BUFFER; }
+  pressShoot() { this.atkBuffer = ATK_BUFFER; this.bufferedTouchShot = touchShooting(); }
 
   teleport(x, y) {
     this.body.reset(x, y - PLAYER_H / 2);
@@ -68,7 +68,12 @@ export class Player {
     if (this.frozen) { b.setVelocityX(0); this.ground && b.setVelocityY(0); this.render(dt); return; }
 
     // --- attack
-    if ((this.atkBuffer > 0 || touchShooting()) && this.state !== 'attack') { this.atkBuffer = 0; this.state = 'attack'; this.t = 0; this.atkHit = false; SFX.charge(); }
+    if ((this.atkBuffer > 0 || touchShooting()) && this.state !== 'attack') {
+      this.touchAttack = touchShooting() || (this.atkBuffer > 0 && this.bufferedTouchShot);
+      this.atkBuffer = 0; this.bufferedTouchShot = false;
+      this.state = 'attack'; this.t = 0; this.atkHit = false;
+      if (!this.touchAttack) SFX.charge();
+    }
     const attacking = this.state === 'attack';
 
     // --- horizontal movement
@@ -115,7 +120,7 @@ export class Player {
 
     // --- state machine
     if (attacking) {
-      if (!this.atkHit && this.t >= ATK_FIRE) { this.atkHit = true; scene.fireShot(this.x + this.face * 46, this.y - 52, this.face); }
+      if (!this.atkHit && this.t >= (this.touchAttack ? 0 : ATK_FIRE)) { this.atkHit = true; scene.fireShot(this.x + this.face * 46, this.y - 52, this.face); }
       if (this.t > ATK_TIME) this.state = 'idle';
     }
     if (this.state !== 'attack') this.state = !this.ground ? 'jump' : ducking ? 'duck' : Math.abs(b.velocity.x) > 20 ? 'run' : 'idle';
@@ -128,7 +133,7 @@ export class Player {
 
   frameIndex() {
     return kinFrame(kinMap, { state: this.state, t: this.state === 'run' ? this.runT : this.t, jet: this.jet,
-      thrust: this.thrust, vy: this.vy, landT: this.landT });
+      thrust: this.thrust, vy: this.vy, landT: this.landT, touchAttack: this.touchAttack });
   }
 
   // visuals follow the body (called after movement each frame)

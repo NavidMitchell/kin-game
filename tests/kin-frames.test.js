@@ -40,3 +40,9 @@ test('all manifest frames fit the uniform sheet', () => {
   assert.equal(map.height, map.rows * map.frameHeight);
   for (const a of Object.values(map.animations)) for (const frame of a.frames) assert.ok(Number.isInteger(frame) && frame >= 0 && frame < map.frameCount);
 });
+test('touch fire starts at the muzzle-flash pose without charging for every equipment state', () => {
+  for (const [jet, thrust, prefix] of [[false,false,''],[true,false,'jet_'],[true,true,'jet_thrust_']]) {
+    assert.equal(pick({state:'attack',jet,thrust,t:0,touchAttack:true}),map.animations[prefix+'fire'].frames[0]);
+    assert.equal(pick({state:'attack',jet,thrust,t:ATK_TIME,touchAttack:true}),map.animations[prefix+'fire'].frames.at(-1));
+  }
+});
