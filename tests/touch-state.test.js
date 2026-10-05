@@ -21,3 +21,10 @@ test('floating pad supports a deadzone, diagonal flight and crouching', () => {
   assert.deepEqual(padDirections(-30, 30), ['ArrowLeft', 'ArrowDown']);
   assert.deepEqual(padDirections(0, -30), ['Space']);
 });
+test('joystick hysteresis absorbs jitter and releases near center', () => {
+  const right = padDirections(16, 0);
+  assert.deepEqual(padDirections(12, 0, 14, right), ['ArrowRight']);
+  assert.deepEqual(padDirections(6, 0, 14, right), []);
+  assert.deepEqual(padDirections(-18, 0, 14, right), ['ArrowLeft']);
+  assert.deepEqual(padDirections(0, -12, 14, ['Space']), ['Space']);
+});

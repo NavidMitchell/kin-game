@@ -5,7 +5,7 @@ import {
   RUN, JUMP_V, JET_THRUST, JET_SPEED, MAX_FALL, ACC_GROUND, ACC_AIR, COYOTE, JUMP_BUFFER, ATK_BUFFER,
   PLAYER_W, PLAYER_H, PLAYER_DUCK_H, ATK_TIME, ATK_FIRE, DEPTH,
 } from '../config.js';
-import { touchShooting, held } from '../controls.js';
+import { touchJumping, touchMoving, touchShooting, held } from '../controls.js';
 import kinMap from '../../assets/player/kin.json';
 import { kinFrame } from '../gfx/kin-frames.js';
 import { SFX, thruster } from '../audio/sfx.js';
@@ -74,12 +74,12 @@ export class Player {
     // --- horizontal movement
     const dir = (held.right() ? 1 : 0) - (held.left() ? 1 : 0);
     const ducking = this.ground && held.down() && !attacking;
-    const target = (attacking || ducking) && this.ground ? 0 : dir * RUN;
+    const target = ((attacking && !touchMoving()) || ducking) && this.ground ? 0 : dir * RUN;
     const acc = this.ground ? ACC_GROUND : ACC_AIR;
     let vx = b.velocity.x;
     if (vx < target) vx = Math.min(target, vx + acc * dt); else if (vx > target) vx = Math.max(target, vx - acc * dt);
     b.setVelocityX(vx);
-    if (dir && !attacking && !ducking) this.face = dir;
+    if (dir && (!attacking || touchMoving()) && !ducking) this.face = dir;
 
     // --- ride vertical movers down instead of bouncing off them
     if (this.ground && this.standingOn?.mover) {
@@ -89,7 +89,7 @@ export class Player {
 
     // --- jump
     this.coyote = this.ground ? COYOTE : this.coyote - dt;
-    if (this.jumpBuffer > 0 && this.coyote > 0) {
+    if ((this.jumpBuffer > 0 || (touchJumping() && this.ground)) && this.coyote > 0) {
       this.jumpBuffer = 0; this.coyote = 0; b.setVelocityY(JUMP_V); this.ground = false; this.standingOn = null;
       SFX.jump(); scene.fx.puff(this.x, this.y, 6, '#35e9ff', 120);
     }

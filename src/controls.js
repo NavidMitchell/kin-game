@@ -8,6 +8,8 @@ const fingers = touchState();
 const gestures = new Map();
 let touchHelpShown = false;
 const down = code => keys[code] || fingers.held(code);
+export const touchJumping = () => fingers.held('Space');
+export const touchMoving = () => fingers.held('ArrowLeft') || fingers.held('ArrowRight');
 export const touchShooting = () => fingers.held('KeyB');
 const listeners = new Set();
 
@@ -70,11 +72,13 @@ export function initControls() {
   const mobile = matchMedia('(pointer: coarse)').matches || navigator.maxTouchPoints > 0;
   if (mobile && touchUI) touchUI.classList.add('on');
   document.body.classList.toggle('mobile-controls', mobile);
+  let wasPortrait;
   const syncOrientation = () => {
     const portrait = mobile && innerHeight > innerWidth;
     document.body.classList.toggle('mobile-portrait', portrait);
     document.getElementById('rotate').hidden = !portrait;
-    releaseAll();
+    if (portrait !== wasPortrait) releaseAll();
+    wasPortrait = portrait;
     const game = window.kin?.scene.getScene('Game');
     if (portrait && game?.mode === 'play') game.pause();
   };
@@ -93,6 +97,7 @@ export function initControls() {
     if (!playing() || e.target.closest('button, #touch-help, #rotate')) return;
     e.preventDefault();
     const left = e.clientX < innerWidth / 2;
+    if (left && [...gestures.values()].some(g => g.left)) return;
     gestures.set(e.pointerId, { x: e.clientX, y: e.clientY, left, codes: left ? [] : ['KeyB'] });
     e.target.setPointerCapture?.(e.pointerId);
     fingers.press(e.pointerId, left ? [] : ['KeyB']);
@@ -103,7 +108,11 @@ export function initControls() {
     if (!g || !playing()) return;
     e.preventDefault();
     if (!g.left) return;
-    const codes = padDirections(e.clientX - g.x, e.clientY - g.y);
+    // Let the invisible centre follow long drags so reversing direction stays reachable.
+    const dx = e.clientX - g.x, dy = e.clientY - g.y;
+    g.x = e.clientX - Math.max(-40, Math.min(40, dx));
+    g.y = e.clientY - Math.max(-40, Math.min(40, dy));
+    const codes = padDirections(e.clientX - g.x, e.clientY - g.y, 14, g.codes);
     fingers.press(e.pointerId, codes);
     for (const code of codes) if (!g.codes.includes(code)) press(code);
     g.codes = codes;

@@ -9,12 +9,13 @@ export function touchState() {
   };
 }
 
-// Relative to the finger's landing point; diagonals combine movement and flight.
-export function padDirections(dx, dy, deadzone = 14) {
+// Separate engage/release thresholds prevent finger jitter toggling movement.
+export function padDirections(dx, dy, deadzone = 14, previous = []) {
   const codes = [];
-  if (dx < -deadzone) codes.push('ArrowLeft');
-  if (dx > deadzone) codes.push('ArrowRight');
-  if (dy < -deadzone) codes.push('Space');
-  if (dy > deadzone) codes.push('ArrowDown');
+  const threshold = code => previous.includes(code) ? deadzone * .55 : deadzone;
+  if (dx < -threshold('ArrowLeft')) codes.push('ArrowLeft');
+  if (dx > threshold('ArrowRight')) codes.push('ArrowRight');
+  if (dy < -threshold('Space')) codes.push('Space');
+  if (dy > threshold('ArrowDown')) codes.push('ArrowDown');
   return codes;
 }
