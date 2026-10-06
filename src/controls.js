@@ -44,6 +44,7 @@ export function releaseAll() {
   for (const k in keys) keys[k] = false;
   fingers.clear();
   gestures.clear();
+  const nub = document.getElementById('pad-nub'); if (nub) nub.style.transform = '';
   document.querySelectorAll('.btn.held').forEach(el => el.classList.remove('held'));
 }
 async function fullscreen() {
@@ -93,32 +94,54 @@ export function initControls() {
   syncOrientation();
   const playing = () => mobile && !document.body.classList.contains('mobile-portrait')
     && window.kin?.scene.isActive('Game') && window.kin.scene.getScene('Game').mode === 'play';
-  document.addEventListener('pointerdown', e => {
-    if (!playing() || e.target.closest('button, #touch-help, #rotate')) return;
-    e.preventDefault();
-    const left = e.clientX < innerWidth / 2;
-    if (left && [...gestures.values()].some(g => g.left)) return;
-    gestures.set(e.pointerId, { x: e.clientX, y: e.clientY, left, codes: left ? [] : ['KeyB'] });
-    e.target.setPointerCapture?.(e.pointerId);
-    fingers.press(e.pointerId, left ? [] : ['KeyB']);
-    if (!left) press('KeyB');
-  }, { passive: false });
+  const pad = document.getElementById('move-pad');
+  const nub = document.getElementById('pad-nub');
+  const updatePad = (e, g) => {
+    const dx = e.clientX - g.x, dy = e.clientY - g.y;
+    const codes = padDirections(dx, dy, 14, g.codes);
+    fingers.press(e.pointerId, codes);
+    g.codes = codes;
+    const scale = Math.min(1, 38 / (Math.hypot(dx, dy) || 1));
+    nub.style.transform = `translate(${dx * scale}px, ${dy * scale}px)`;
+  };
+  for (const el of [pad, ...document.querySelectorAll('[data-control]')]) {
+    el.addEventListener('pointerdown', e => {
+      if (!playing()) return;
+      e.preventDefault();
+      const left = el === pad;
+      if (left && [...gestures.values()].some(g => g.left)) return;
+      const rect = el.getBoundingClientRect();
+      const codes = left ? [] : [el.dataset.control];
+      const g = { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2, left, codes, el };
+      gestures.set(e.pointerId, g);
+      el.setPointerCapture(e.pointerId);
+      el.classList.add('held');
+      fingers.press(e.pointerId, codes);
+      if (left) updatePad(e, g);
+      else for (const code of codes) press(code);
+    }, { passive: false });
+  }
   document.addEventListener('pointermove', e => {
     const g = gestures.get(e.pointerId);
     if (!g || !playing()) return;
     e.preventDefault();
-    if (!g.left) return;
-    // Let the invisible centre follow long drags so reversing direction stays reachable.
-    const dx = e.clientX - g.x, dy = e.clientY - g.y;
-    g.x = e.clientX - Math.max(-40, Math.min(40, dx));
-    g.y = e.clientY - Math.max(-40, Math.min(40, dy));
-    const codes = padDirections(e.clientX - g.x, e.clientY - g.y, 14, g.codes);
-    fingers.press(e.pointerId, codes);
-    for (const code of codes) if (!g.codes.includes(code)) press(code);
-    g.codes = codes;
+    if (g.left) updatePad(e, g);
   }, { passive: false });
-  const off = e => { gestures.delete(e.pointerId); fingers.release(e.pointerId); };
+  const off = e => {
+    const g = gestures.get(e.pointerId);
+    gestures.delete(e.pointerId); fingers.release(e.pointerId);
+    if (g && ![...gestures.values()].some(other => other.el === g.el)) g.el.classList.remove('held');
+    if (g?.left) nub.style.transform = '';
+  };
   for (const ev of ['pointerup', 'pointercancel', 'lostpointercapture']) document.addEventListener(ev, off);
+  const view = document.getElementById('mobile-view');
+  view.addEventListener('change', () => {
+    releaseAll();
+    document.body.dataset.mobileView = view.value;
+    window.kin?.scale.refresh();
+    window.dispatchEvent(new Event('mobileviewchange'));
+  });
+  document.body.dataset.mobileView = view.value;
   document.getElementById('bp').addEventListener('click', () => press('Escape'));
   document.getElementById('bm').addEventListener('click', e => {
     musicToggle();

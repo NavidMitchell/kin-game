@@ -73,6 +73,10 @@ export class GameScene extends Phaser.Scene {
     this.camX = Phaser.Math.Clamp(spawn.x - W * .38, 0, L.width - W);
     this.camY = Phaser.Math.Clamp(spawn.y - H * .68, 0, L.height - H);
     cam.setScroll(this.camX, this.camY);
+    this.applyMobileView();
+    const changeView = () => this.applyMobileView();
+    window.addEventListener('mobileviewchange', changeView);
+    this.events.once('shutdown', () => window.removeEventListener('mobileviewchange', changeView));
 
     onPress(this, code => {
       if (this.mode !== 'play') return;
@@ -86,6 +90,25 @@ export class GameScene extends Phaser.Scene {
     this.scene.launch('HUD');
     showTouchHelp(this);
     this.time.delayedCall(250, () => this.events.emit('banner', cp ? 'CHECKPOINT' : `LEVEL ${L.id}`, cp ? L.name.toUpperCase() : L.name.toUpperCase()));
+  }
+
+  applyMobileView() {
+    const wide = document.body.classList.contains('mobile-controls') && document.body.dataset.mobileView === 'wide';
+    const zoom = wide ? .8 : 1;
+    const cam = this.cameras.main;
+    cam.setZoom(zoom);
+    this.viewW = W / zoom; this.viewH = H / zoom;
+    this.viewOffsetX = (W - this.viewW) / 2;
+    this.viewOffsetY = (H - this.viewH) / 2;
+    this.camX = Phaser.Math.Clamp(this.player.x - this.viewW * .38, 0, Math.max(0, this.level.width - this.viewW));
+    this.camY = Phaser.Math.Clamp(this.player.y - this.viewH * .68, 0, Math.max(0, this.level.height - this.viewH));
+    cam.setScroll(this.camX - this.viewOffsetX, this.camY - this.viewOffsetY);
+    for (const bg of [this.bgFar, this.bgNear]) {
+      bg.setPosition(this.viewOffsetX, this.viewOffsetY - (bg === this.bgFar ? 40 / zoom : 0));
+      bg.setSize(this.viewW, this.viewH);
+      bg.setTileScale(this.bgScale / zoom);
+    }
+    this.fog.setPosition(this.viewOffsetX, this.viewOffsetY).setScale(1 / zoom);
   }
 
   // ---------------------------------------------------------------- world building
@@ -102,7 +125,7 @@ export class GameScene extends Phaser.Scene {
       }
     }
     this.bgScale = s;
-    this.add.image(0, 0, 'fog').setOrigin(0).setScrollFactor(0).setDepth(DEPTH.fog);
+    this.fog = this.add.image(0, 0, 'fog').setOrigin(0).setScrollFactor(0).setDepth(DEPTH.fog);
   }
 
   buildTerrain() {
@@ -378,7 +401,7 @@ export class GameScene extends Phaser.Scene {
     if (fell) {
       p.teleport(this.lastSafe.x, this.lastSafe.y);
       this.lookAhead = 0;
-      this.camX = Phaser.Math.Clamp(this.lastSafe.x - W * .38, 0, this.level.width - W);
+      this.camX = Phaser.Math.Clamp(this.lastSafe.x - this.viewW * .38, 0, Math.max(0, this.level.width - this.viewW));
     } else {
       p.body.setVelocity(dir * 420, -500);
     }
@@ -447,11 +470,11 @@ export class GameScene extends Phaser.Scene {
     // Ease look-ahead from actual velocity, avoiding a target jump when facing flips.
     if (this.mode !== 'over') {
       this.lookAhead = cameraLead(this.lookAhead, p.vx, RUN, dt);
-      this.camX = easeCamera(this.camX, p.x + this.lookAhead - W * .38, 4, dt);
-      this.camY = easeCamera(this.camY, p.y - H * .68, p.ground ? 4 : 2.5, dt);
-      this.camX = Phaser.Math.Clamp(this.camX, 0, L.width - W);
-      this.camY = Phaser.Math.Clamp(this.camY, 0, L.height - H);
-      cam.setScroll(this.camX, this.camY);
+      this.camX = easeCamera(this.camX, p.x + this.lookAhead - this.viewW * .38, 4, dt);
+      this.camY = easeCamera(this.camY, p.y - this.viewH * .68, p.ground ? 4 : 2.5, dt);
+      this.camX = Phaser.Math.Clamp(this.camX, 0, Math.max(0, L.width - this.viewW));
+      this.camY = Phaser.Math.Clamp(this.camY, 0, Math.max(0, L.height - this.viewH));
+      cam.setScroll(this.camX - this.viewOffsetX, this.camY - this.viewOffsetY);
     }
     this.bgNear.tilePositionX = cam.scrollX * .4 / this.bgScale;
     this.bgFar.tilePositionX = cam.scrollX * .15 / this.bgScale;
@@ -505,7 +528,7 @@ export class GameScene extends Phaser.Scene {
       if (this.solids.some(r => s.x > r.x && s.x < r.x + r.w && s.y > r.y && s.y < r.y + r.h)) { s.life = 0; this.fx.puff(s.x, s.y, 8, '#ff7ad9', 160); }
       s.img.setPosition(s.x, s.y).setAlpha(Math.min(1, s.life * 3));
     }
-    for (const s of this.shots) if (s.life <= 0 || s.x < cam.scrollX - 120 || s.x > cam.scrollX + W + 120) { s.img.destroy(); s.dead = true; }
+    for (const s of this.shots) if (s.life <= 0 || s.x < cam.worldView.left - 120 || s.x > cam.worldView.right + 120) { s.img.destroy(); s.dead = true; }
     this.shots = this.shots.filter(s => !s.dead);
   }
 
@@ -536,7 +559,7 @@ export class GameScene extends Phaser.Scene {
       for (const s of this.shots) if (s.life > 0 && l.life > 0 && Math.abs(l.x - s.x) < 40 && Math.abs(l.y - s.y) < 30) { l.life = 0; s.life = 0; this.fx.puff(s.x, s.y, 10, '#ff7ad9', 220); }
       l.img.setPosition(l.x, l.y);
     }
-    for (const l of this.lasers) if (l.life <= 0 || l.x < cam.scrollX - 100 || l.x > cam.scrollX + W + 100) { l.img.destroy(); l.dead = true; }
+    for (const l of this.lasers) if (l.life <= 0 || l.x < cam.worldView.left - 100 || l.x > cam.worldView.right + 100) { l.img.destroy(); l.dead = true; }
     this.lasers = this.lasers.filter(l => !l.dead);
   }
 

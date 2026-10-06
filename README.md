@@ -107,3 +107,9 @@ npm run build:standalone   # dist/kin-runner.html: the whole game in one file, e
 `.github/workflows/pages.yml` runs on every push to `main` (or by hand from the Actions tab). It checks the levels, builds the site and publishes it to GitHub Pages at `https://<owner>.github.io/<repo>/`. The single-file version is published alongside it as `kin-runner.html`.
 
 One-time setup: in the repository's **Settings → Pages**, set **Source** to **GitHub Actions**.
+
+### Mobile control comparison
+
+Landscape touch controls use a fixed left movement pad (left/right and down to crouch), plus separate Jump / Fly and Fire buttons. Each jump requires a fresh press; holding Jump powers the jetpack and holding Fire repeats shots with desktop timing. Upward aiming is reserved for future sprite support.
+
+The mobile view selector compares overlay controls, dedicated side controls at the existing camera zoom, and side controls with an 80% camera zoom (25% more world visible). Switching keeps the current level and progress. Desktop layout is unchanged.

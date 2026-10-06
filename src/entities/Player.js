@@ -5,7 +5,7 @@ import {
   RUN, JUMP_V, JET_THRUST, JET_SPEED, MAX_FALL, ACC_GROUND, ACC_AIR, COYOTE, JUMP_BUFFER, ATK_BUFFER,
   PLAYER_W, PLAYER_H, PLAYER_DUCK_H, ATK_TIME, ATK_FIRE, DEPTH,
 } from '../config.js';
-import { touchJumping, held } from '../controls.js';
+import { held } from '../controls.js';
 import kinMap from '../../assets/player/kin.json';
 import { kinFrame } from '../gfx/kin-frames.js';
 import { SFX, thruster } from '../audio/sfx.js';
@@ -92,7 +92,7 @@ export class Player {
 
     // --- jump
     this.coyote = this.ground ? COYOTE : this.coyote - dt;
-    if ((this.jumpBuffer > 0 || (touchJumping() && this.ground)) && this.coyote > 0) {
+    if (this.jumpBuffer > 0 && this.coyote > 0) {
       this.jumpBuffer = 0; this.coyote = 0; b.setVelocityY(JUMP_V); this.ground = false; this.standingOn = null;
       SFX.jump(); scene.fx.puff(this.x, this.y, 6, '#35e9ff', 120);
     }

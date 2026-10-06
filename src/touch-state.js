@@ -15,7 +15,7 @@ export function padDirections(dx, dy, deadzone = 14, previous = []) {
   const threshold = code => previous.includes(code) ? deadzone * .55 : deadzone;
   if (dx < -threshold('ArrowLeft')) codes.push('ArrowLeft');
   if (dx > threshold('ArrowRight')) codes.push('ArrowRight');
-  if (dy < -threshold('Space')) codes.push('Space');
+  // Up is reserved for future aiming; jumping has a separate button.
   if (dy > threshold('ArrowDown')) codes.push('ArrowDown');
   return codes;
 }

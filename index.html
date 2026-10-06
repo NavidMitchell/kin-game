@@ -34,19 +34,32 @@
   .touch-tips p { font-size:14px; line-height:1.5; margin:8px 0; }
   #touch-start { margin-top:12px; padding:12px 32px; border:1px solid var(--cyan); border-radius:12px; background:#12333d; color:white; font:bold 16px system-ui; }
   #touch-help[hidden], #rotate[hidden] { display:none; }
+
+  #move-pad { left:max(12px, env(safe-area-inset-left)); bottom:max(12px, env(safe-area-inset-bottom)); width:116px; height:116px; }
+  #pad-nub { display:block; margin:auto; width:42px; height:42px; border-radius:50%; background:#35e9ff55; border:1px solid #35e9ff99; pointer-events:none; }
+  #jump-button { right:max(82px, calc(env(safe-area-inset-right) + 76px)); bottom:max(14px, env(safe-area-inset-bottom)); }
+  #fire-button { right:max(12px, env(safe-area-inset-right)); bottom:max(84px, calc(env(safe-area-inset-bottom) + 74px)); }
+  #view-picker { position:absolute; left:8px; top:8px; font:11px system-ui; pointer-events:auto; }
+  #mobile-view { display:block; color:#b6f5ff; background:#10212c; border:1px solid #35e9ff77; border-radius:6px; padding:6px; max-width:130px; }
+  body.mobile-controls:not([data-mobile-view="overlay"]) #game { left:max(140px, calc(env(safe-area-inset-left) + 132px)); right:max(150px, calc(env(safe-area-inset-right) + 142px)); }
 </style>
 </head>
 <body>
 <div id="game"></div>
 <div id="touch" aria-label="Game controls">
+  <label id="view-picker">Compare mobile views<select id="mobile-view"><option value="overlay">1 · Overlay</option><option value="sides" selected>2 · Side controls</option><option value="wide">3 · Wider view</option></select></label>
+  <button class="btn" id="move-pad" aria-label="Movement pad: left, right, down to crouch"><span id="pad-nub"></span></button>
+  <button class="btn" id="jump-button" data-control="Space">Jump / Fly</button>
+  <button class="btn" id="fire-button" data-control="KeyB">Fire</button>
   <button class="btn utility" id="bp" aria-label="Pause">Pause</button>
   <button class="btn utility" id="bm" aria-pressed="false">Music on</button>
   <button class="btn utility" id="bf">Fullscreen</button>
 </div>
 <div id="touch-help" hidden role="dialog" aria-modal="true" aria-labelledby="touch-heading">
-  <h1 id="touch-heading">Two thumbs. The whole screen.</h1>
-  <div class="touch-tips"><section><h2>Left side · Move &amp; fly</h2><p>Touch anywhere on the left, then slide from that spot.<br>← → Move · ↑ Jump / hold to fly · ↓ Crouch</p><p>Slide diagonally to move and fly together.</p></section>
-  <section><h2>Right side · Shoot</h2><p>Tap anywhere on the right to fire.<br>Keep holding to fire repeatedly.</p><p>Use both sides together. Lift your finger to stop.</p></section></div>
+  <h1 id="touch-heading">Move. Jump. Fire.</h1>
+  <div class="touch-tips"><section><h2>Left thumb · Movement pad</h2><p>Slide left or right to move.<br>Slide down to crouch.</p><p>Up no longer jumps. Upward aiming is coming later.</p></section>
+  <section><h2>Right thumb · Two buttons</h2><p>Press Jump / Fly to jump. Hold for height or jetpack flight. Release before jumping again.</p><p>Hold Fire to keep shooting. Jumping never fires a shot.</p></section></div>
+  <p>Use “Compare mobile views” to try the same level with different screen layouts.</p>
   <button id="touch-start">Let’s play</button>
 </div>
 <div id="rotate" hidden role="status"><h1>Turn your phone sideways</h1><p>Kin Runner plays in landscape.</p><p>Your game is paused while you rotate.</p></div>

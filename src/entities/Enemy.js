@@ -26,7 +26,7 @@ export class Enemy {
     this.t += dt;
     this.hitT = Math.max(0, this.hitT - dt);
     if (!this.alive) { this.dieT += dt; if (this.dieT > .55) this.destroy(); else this.render(); return; }
-    const onScreen = this.x > cam.scrollX - 100 && this.x < cam.scrollX + W + 100;
+    const onScreen = this.x > cam.worldView.left - 100 && this.x < cam.worldView.right + 100;
     if (!this.warned && Math.abs(this.x - player.x) < W * .62 && onScreen) { this.warned = true; (this.type === 'drone' ? SFX.droneNear : SFX.skimmerNear)(); }
     const ey = this.top();
     // laser attack (drones): face the player, charge, fire
